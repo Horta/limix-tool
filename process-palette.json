@@ -1,0 +1,13 @@
+{
+  "commands" : [
+    {
+      "namespace" : "process-palette",
+      "action" : "scp-limix-util",
+      "command" : "scp",
+      "arguments" : ["'{fileAbsPath}'",
+          "'ebi-003:~/re/workspace/limix-util/{filePath}'"],
+      "successMessage" : null,
+      "autoShowOutput" : false
+    }
+  ]
+}
