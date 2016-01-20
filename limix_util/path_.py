@@ -55,3 +55,7 @@ def rrm(paths):
 
     if retcode < 0:
         print >>sys.stderr, "Child was terminated by signal", -retcode
+
+def touch(fname, times=None):
+    with open(fname, 'a'):
+        os.utime(fname, times)
