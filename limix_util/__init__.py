@@ -1,6 +1,8 @@
 import path_
 import pickle_
 import time_
+import str_
+import hdf5_
 from misc import traverse_dict
 from misc import ring
 from misc import BeginEnd
