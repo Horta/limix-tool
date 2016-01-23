@@ -1,12 +1,16 @@
-def see(f, root_name='/'):
+def tree(f, root_name='/', ret=False):
+    import h5py
     import numpy as np
     import asciitree
 
     _names = []
     def get_names(name, obj):
-        _names.append(name)
-        for key, val in obj.attrs.iteritems():
-            print "    %s: %s" % (key, val)
+        if isinstance(obj, h5py._hl.dataset.Dataset):
+            dtype = str(obj.dtype)
+            shape = str(obj.shape)
+            _names.append("%s [%s, %s]" % (name, dtype, shape))
+        else:
+            _names.append(name)
 
     f.visititems(get_names)
     class Node(object):
@@ -35,4 +39,8 @@ def see(f, root_name='/'):
         indices = np.argsort(keys)
         indices = np.asarray(indices)
         return list(np.asarray(node.children.values())[indices])
-    return asciitree.draw_tree(root, child_iter)
+
+    msg = asciitree.draw_tree(root, child_iter)
+    if ret:
+        return msg
+    print msg

@@ -60,52 +60,6 @@ class BeginEnd(object):
             print('-- %s end (%.2f s) --' % (self._task, elapsed))
             sys.stdout.flush()
 
-
-if __name__ == '__main__':
-
-    b = dict(group1=[3, 5, 2], group2=[5, 2], group3=[8])
-    c = dict(group59=[1,2,3,4])
-
-    a = dict(b=b, c=c)
-
-    import matplotlib.gridspec as gridspec
-    import pylab as plt
-
-    def visit_func(d, opt):
-        n = len(d)
-        plot_this = n > 0 and not isinstance(d, dict)
-
-
-        if plot_this:
-            axis = plt.subplot(opt['ss'])
-            axis.plot([1, 2, 3], [1, 2, 2])
-            axis.set_xlabel(opt['title'])
-        else:
-            nrow = ncol = int(math.sqrt(n))
-            if nrow * ncol < n:
-                ncol += 1
-            if nrow * ncol < n:
-                nrow += 1
-
-            grid = gridspec.GridSpecFromSubplotSpec(nrow, ncol,
-                                         subplot_spec=opt['ss'])
-
-
-            opts = []
-            for i in xrange(len(d)):
-                nopt = dict(title=d.keys()[i],
-                            ss=grid[int(i / ncol), int(i % ncol)])
-                opts.append(nopt)
-
-            return opts
-
-    ss = gridspec.GridSpec(1, 1)[0, 0]
-
-    traverse_dict(a, visit_func, dict(title='root', ss=ss))
-
-    import gwarped_exp as gwe
-    gwe.plot.show_on_terminal()
-
 def query_yes_no(question, default="yes"):
     """Ask a yes/no question via raw_input() and return their answer.
 
