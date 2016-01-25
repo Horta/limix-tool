@@ -18,8 +18,11 @@ def count_lines(filepath):
     return sum(1 for line in open(filepath, 'r'))
 
 class TmpFileCopy(object):
-    def __init__(self, path):
+    def __init__(self, path, copy_back=False):
+        self._dst = None
         self._path = path
+        self._folder = None
+        self._copy_back = copy_back
         if not os.path.exists(path):
             raise Exception('%s does not exist.' % path)
 
@@ -35,9 +38,17 @@ class TmpFileCopy(object):
             print >>sys.stderr, "Child was terminated by signal", -retcode
             raise Exception('Could not copy %s.' % self._path)
 
+        self._dst = dst
         return dst
 
     def __exit__(self, *args):
+        if self._copy_back:
+            retcode = subprocess.call("cp " + self._dst + " " + self._path,
+                                      shell=True)
+
+            if retcode < 0:
+                print >>sys.stderr, "Child was terminated by signal", -retcode
+                raise Exception('Could not copy %s back.' % self._dst)
         shutil.rmtree(self._folder)
 
 class ChDir(object):
