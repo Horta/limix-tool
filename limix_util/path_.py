@@ -17,6 +17,29 @@ def temp_folder():
 def count_lines(filepath):
     return sum(1 for line in open(filepath, 'r'))
 
+class TmpFileCopy(object):
+    def __init__(self, path):
+        self._path = path
+        if not os.path.exists(path):
+            raise Exception('%s does not exist.' % path)
+
+    def __enter__(self):
+        self._folder = tempfile.mkdtemp()
+        bname = os.path.basename(self._path)
+        dst = os.path.join(self._folder, bname)
+
+        retcode = subprocess.call("cp " + self._path + " " + dst,
+                                  shell=True)
+
+        if retcode < 0:
+            print >>sys.stderr, "Child was terminated by signal", -retcode
+            raise Exception('Could not copy %s.' % self._path)
+
+        return dst
+
+    def __exit__(self, *args):
+        shutil.rmtree(self._folder)
+
 class ChDir(object):
     """
     Step into a directory temporarily.

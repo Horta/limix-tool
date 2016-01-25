@@ -1,6 +1,14 @@
-def tree(f, root_name='/', ret=False):
-    import h5py
-    import numpy as np
+import h5py
+import numpy as np
+
+def tree(f_or_filepath, root_name='/', ret=False):
+    if isinstance(f_or_filepath, str):
+        with h5py.File(f_or_filepath) as f:
+            _tree(f, root_name, ret)
+    else:
+        _tree(f_or_filepath, root_name, ret)
+
+def _tree(f, root_name='/', ret=False):
     import asciitree
 
     _names = []

@@ -1,7 +1,9 @@
 import time
+import humanfriendly as hf
 
 class Timer(object):
-    def __init__(self):
+    def __init__(self, verbose=True):
+        self._verbose = verbose
         self._tstart = None
         self.elapsed = None
 
@@ -11,3 +13,5 @@ class Timer(object):
 
     def __exit__(self, type_, value_, traceback_):
         self.elapsed = time.time() - self._tstart
+        if self._verbose:
+            print 'Elapsed time: %s.' % hf.format_timespan(self.elapsed)
