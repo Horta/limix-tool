@@ -77,14 +77,16 @@ def copy_memmap_h5dt(arr, dt):
             r = re
 
 class Memmap(object):
-    def __init__(self, filepath, path):
+    def __init__(self, filepath, path, readonly=True, tmp_folder=None):
         self._filepath = filepath
         self._path = path
         self._folder = None
         self._X = None
+        self._readonly = readonly
+        self._tmp_folder = tmp_folder
 
     def __enter__(self):
-        self._folder = tempfile.mkdtemp()
+        self._folder = tempfile.mkdtemp(dir=self._tmp_folder)
         with h5py.File(self._filepath, 'r') as f:
             dt = f[self._path]
             shape = dt.shape
@@ -93,7 +95,9 @@ class Memmap(object):
                           shape=shape, dtype=dtype)
             dt.read_direct(X)
             del X
-        X = np.memmap(os.path.join(self._folder, 'X'), mode='r',
+
+        mode = 'r' if self._readonly else 'r+'
+        X = np.memmap(os.path.join(self._folder, 'X'), mode=mode,
                       shape=shape, dtype=dtype)
         self._X = X
         return X
