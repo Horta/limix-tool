@@ -76,6 +76,66 @@ def copy_memmap_h5dt(arr, dt):
             dt[r:re,:] = arr[r:re,:]
             r = re
 
+# import gc
+# def copy_h5dt_memmap(dt, arr):
+#     if arr.ndim > 2:
+#         raise Exception("I don't know how to handle arrays" +
+#                         " with more than 2 dimensions yet.")
+#     assert arr.shape == dt.shape
+#     if len(dt.shape) == 1:
+#         arr[:] = dt[:]
+#     else:
+#         if dt.chunks is not None:
+#             chunk_row = dt.chunks[0]
+#         else:
+#             chunk_row = 512
+#         r = 0
+#         # mem = np.empty((chunk_row, dt.shape[1]), dtype=arr.dtype)
+#         while r < dt.shape[0]:
+#             re = r + chunk_row
+#             re = min(re, dt.shape[0])
+#
+#
+#             # dt.read_direct(mem, np.s_[r:re,:], np.s_[0:(re-r),:])
+#
+#             # arr[r:re,:] = dt[r:re,:]
+#             # mem[:] = np.random.randn(mem.shape[0], mem.shape[1])
+#             # arr[r:re,:] = mem[0:(re-r),:]
+#             arr[r:re,:] = 1.
+#
+#             arr.flush()
+#             # dt.file.flush()
+#             gc.collect()
+#
+#             r = re
+
+def copy_h5dt_memmap_filepath(dt, fp):
+
+    arr = np.memmap(fp, mode='w+', shape=dt.shape, dtype=dt.dtype)
+    if arr.ndim > 2:
+        raise Exception("I don't know how to handle arrays" +
+                        " with more than 2 dimensions yet.")
+    assert arr.shape == dt.shape
+
+    if len(dt.shape) == 1:
+        arr[:] = dt[:]
+        del arr
+    else:
+        if dt.chunks is not None:
+            chunk_row = dt.chunks[0]
+        else:
+            chunk_row = 512
+        r = 0
+        del arr
+        while r < dt.shape[0]:
+            arr = np.memmap(fp, mode='r+', shape=dt.shape, dtype=dt.dtype)
+            re = r + chunk_row
+            re = min(re, dt.shape[0])
+            s = np.s_[r:re,:]
+            dt.read_direct(arr, s, s)
+            r = re
+            del arr
+
 class Memmap(object):
     def __init__(self, filepath, path, readonly=True, tmp_folder=None):
         self._filepath = filepath
@@ -87,14 +147,11 @@ class Memmap(object):
 
     def __enter__(self):
         self._folder = tempfile.mkdtemp(dir=self._tmp_folder)
-        with h5py.File(self._filepath, 'r') as f:
+        with h5py.File(self._filepath, 'r', libversion='latest') as f:
             dt = f[self._path]
             shape = dt.shape
             dtype = dt.dtype
-            X = np.memmap(os.path.join(self._folder, 'X'), mode='write',
-                          shape=shape, dtype=dtype)
-            dt.read_direct(X)
-            del X
+            copy_h5dt_memmap_filepath(dt, os.path.join(self._folder, 'X'))
 
         mode = 'r' if self._readonly else 'r+'
         X = np.memmap(os.path.join(self._folder, 'X'), mode=mode,

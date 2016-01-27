@@ -43,6 +43,25 @@ def kinship_estimation(X, out=None, inplace=False):
     X.dot(X.T, out=out)
     out /= out.diagonal().mean()
 
+def slow_kinship_estimation(X, out=None, inplace=False):
+    std = X.std(0)
+    ok = std > 0
+
+    std = std[ok]
+    X = X[:, ok]
+    if inplace:
+        X = (X - X.mean(0)) / std
+    else:
+        X -= X.mean(0)
+        X /= std
+    if out is None:
+        K = X.dot(X.T)
+        return K / K.diagonal().mean()
+    if isinstance(X, np.core.memmap) and isinstance(out, np.ndarray):
+        out = np.asarray(out)
+    X.dot(X.T, out=out)
+    out /= out.diagonal().mean()
+
 # def ukinship_estimation(gr):
 #     nchroms = gr.nchroms
 #     for c in xrange(1, nchroms+1):
