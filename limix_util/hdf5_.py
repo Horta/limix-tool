@@ -16,7 +16,6 @@ def _tree(f, root_name='/', ret=False):
 
     _names = []
     def get_names(name, obj):
-        print name, type(obj)
         if isinstance(obj, h5py._hl.dataset.Dataset):
             dtype = str(obj.dtype)
             shape = str(obj.shape)
