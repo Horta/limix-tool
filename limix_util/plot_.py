@@ -1,15 +1,19 @@
 import matplotlib.pylab as plt
 import os
 
-def show(fig=None):
+def show(fig=None, dst_fp=None):
     import path_
 
     fig = plt.gcf() if fig is None else fig
 
-    with path_.temp_folder() as folder:
-        fout = os.path.join(folder, 'tmp.png')
-        fig.savefig(fout)
-        os.system("imgcat " + fout)
+    if dst_fp is None:
+        with path_.temp_folder() as folder:
+            fout = os.path.join(folder, 'tmp.png')
+            fig.savefig(fout)
+            os.system("imgcat " + fout)
+    else:
+        fig.savefig(dst_fp)
+        os.system("imgcat " + dst_fp)
 
 def heatmap(X, ax=None):
     ax = plt.gca() if ax is None else ax
