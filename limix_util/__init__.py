@@ -5,6 +5,7 @@ import str_
 import hdf5_
 import data_
 import plot_
+import inspect_
 import h2
 import data_format
 from misc import traverse_dict
