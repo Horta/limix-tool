@@ -1,6 +1,9 @@
 import numpy as np
 import numba
 
+def chromids(chrom_numbers):
+    return ['chrom%02d' % c for c in chrom_numbers]
+
 @numba.jit
 def cross_parents(X, parents, block_size=1000):
     nblocks = X.shape[1] / block_size
