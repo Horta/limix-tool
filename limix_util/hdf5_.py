@@ -4,12 +4,37 @@ import os
 import tempfile
 import shutil
 
+def fetch(fp, path):
+    with h5py.File(fp, 'r') as f:
+        return f[path][:]
+
 def tree(f_or_filepath, root_name='/', ret=False):
     if isinstance(f_or_filepath, str):
         with h5py.File(f_or_filepath, 'r') as f:
             _tree(f, root_name, ret)
     else:
         _tree(f_or_filepath, root_name, ret)
+
+def findnth(haystack, needle, n):
+    parts= haystack.split(needle, n+1)
+    if len(parts)<=n+1:
+        return -1
+    return len(haystack)-len(parts[-1])-len(needle)
+
+def _visititems(root, func, level=0, prefix=''):
+    if root.name != '/':
+        name = root.name
+        eman = name[::-1]
+        i1 = findnth(eman, '/', level)
+        name = '/' + eman[:i1][::-1]
+        func(prefix + name, root)
+    if not hasattr(root, 'keys'):
+        return
+    for k in root.keys():
+        if root.file == root[k].file:
+            _visititems(root[k], func, level+1, prefix)
+        else:
+            _visititems(root[k], func, 0, prefix + root.name)
 
 def _tree(f, root_name='/', ret=False):
     import asciitree
@@ -19,11 +44,12 @@ def _tree(f, root_name='/', ret=False):
         if isinstance(obj, h5py._hl.dataset.Dataset):
             dtype = str(obj.dtype)
             shape = str(obj.shape)
-            _names.append("%s [%s, %s]" % (name, dtype, shape))
+            _names.append("%s [%s, %s]" % (name[1:], dtype, shape))
         else:
-            _names.append(name)
+            _names.append(name[1:])
 
-    f.visititems(get_names)
+    # f.visititems(get_names)
+    _visititems(f, get_names)
     class Node(object):
         def __init__(self, name, children):
             self.name = name
