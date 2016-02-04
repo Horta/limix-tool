@@ -4,6 +4,10 @@ import os
 import tempfile
 import shutil
 
+def fetch(fp, path):
+    with h5py.File(fp, 'r') as f:
+        return f[path][:]
+
 def tree(f_or_filepath, root_name='/', ret=False):
     if isinstance(f_or_filepath, str):
         with h5py.File(f_or_filepath, 'r') as f:

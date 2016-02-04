@@ -1,4 +1,4 @@
-import lz4
+import gzip
 import cPickle
 import os
 import path_
@@ -58,12 +58,29 @@ class SlotPickleMixin(object):
             result.extend(self.__dict__.keys())
         return result
 
+# with gzip.open('file.txt.gz', 'rb') as f:
+#     file_content = f.read()
+
 def pickle(obj, filepath):
-    data = cPickle.dumps(obj)
-    with open(filepath, 'wb') as f:
-        f.write(lz4.dumps(data))
+    with gzip.open(filepath, 'wb') as f:
+        cPickle.dump(obj, f, -1)
 
 def unpickle(filepath):
+    try:
+        with gzip.open(filepath, 'rb') as f:
+            return cPickle.load(f)
+    except Exception as e:
+        print e
+        return _old_unpickle(filepath)
+
+# def _old_pickle(obj, filepath):
+#     import lz4
+#     data = cPickle.dumps(obj)
+#     with open(filepath, 'wb') as f:
+#         f.write(lz4.dumps(data))
+
+def _old_unpickle(filepath):
+    import lz4
     with open(filepath, 'rb') as f:
         return cPickle.loads(lz4.loads(f.read()))
 
