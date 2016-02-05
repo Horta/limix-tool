@@ -42,6 +42,7 @@ def maf_exclusion(X, maf=0.05):
     return ok
 
 def kinship_estimation(X, out=None, inplace=False):
+    X = X.astype(float)
     std = X.std(0)
     ok = std > 0
 

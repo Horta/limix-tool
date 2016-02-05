@@ -11,9 +11,9 @@ def fetch(fp, path):
 def tree(f_or_filepath, root_name='/', ret=False):
     if isinstance(f_or_filepath, str):
         with h5py.File(f_or_filepath, 'r') as f:
-            _tree(f, root_name, ret)
+            return _tree(f, root_name, ret)
     else:
-        _tree(f_or_filepath, root_name, ret)
+        return _tree(f_or_filepath, root_name, ret)
 
 def findnth(haystack, needle, n):
     parts= haystack.split(needle, n+1)

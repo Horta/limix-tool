@@ -15,7 +15,9 @@ def show(fig=None, dst_fp=None):
         fig.savefig(dst_fp)
         os.system("imgcat " + dst_fp)
 
-def heatmap(X, ax=None):
+    plt.close()
+
+def heatmap(X, ax=None, show=True):
     ax = plt.gca() if ax is None else ax
 
     im = ax.imshow(X)
@@ -23,6 +25,10 @@ def heatmap(X, ax=None):
 
     ax.set_frame_on(False)
     ax.grid(False)
+
+    if show:
+        import limix_util as lu
+        lu.plot_.show()
 
 if __name__ == '__main__':
     import numpy as np
