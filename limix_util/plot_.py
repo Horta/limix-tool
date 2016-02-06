@@ -1,4 +1,6 @@
+from __future__ import division
 import matplotlib.pylab as plt
+from numpy import asarray
 import os
 
 def show(fig=None, dst_fp=None):
@@ -29,6 +31,90 @@ def heatmap(X, ax=None, show=True):
     if show:
         import limix_util as lu
         lu.plot_.show()
+
+class BoxPlot(object):
+    def __init__(self):
+        self._values = dict()
+        self._colors = dict()
+
+    @property
+    def _labels(self):
+        labels = set()
+        for v in self._values.values():
+            labels = labels.union(v.keys())
+        return sorted(list(labels))
+
+    @property
+    def _group_labels(self):
+        return sorted(self._values.keys())
+
+    def _get_color(self, label):
+        return self._colors[label]
+
+    def _get_values(self, grp):
+        vs = self._values[grp].values()
+        ks = self._values[grp].keys()
+        return [x for (y, x) in sorted(zip(ks,vs))]
+
+    def set_color(self, label, color):
+        self._colors[label] = color
+
+    def add(self, values, label, grp=''):
+        if grp not in self._values:
+            self._values[grp] = dict()
+        self._values[grp][label] = asarray(values).ravel()
+
+    def plot(self, ax=None):
+        ax = plt.gca() if ax is None else ax
+
+        pos = []
+        left = 0
+        data = []
+        colors = []
+
+        for grp_label in self._group_labels:
+            v = self._get_values(grp_label)
+            right = left + len(v)
+            pos += range(left, right)
+            left = right + 1
+            data.extend(v)
+            colors.extend([self._get_color(l) for l in self._labels])
+
+        pos = [p+1 for p in pos]
+
+        bp = ax.boxplot(data, notch=False, patch_artist=True, positions=pos)
+
+        for i in xrange(len(colors)):
+            c = colors[i]
+            plt.setp(bp['boxes'][i], color=c, facecolor=c)
+        plt.setp(bp['whiskers'], color='black')
+        plt.setp(bp['fliers'], color='red', marker='+')
+
+        fakes = []
+        for l in self._labels:
+            fake, = ax.plot([1,1], color=self._get_color(l))
+            fakes.append(fake)
+
+        labels = self._labels
+        ax.legend(fakes, labels, bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
+                ncol=len(labels), mode="expand", borderaxespad=0.)
+
+        for fake in fakes:
+            fake.set_visible(False)
+
+        ngroups = len(self._values)
+        width_bar = 1/(len(data) + ngroups - 1)
+        width_group = (1 - (ngroups-1) * width_bar) / ngroups
+        for i in xrange(ngroups):
+            left = i * (width_group + width_bar)
+            center = left + width_group/2
+            ax.text(center, -0.03, self._group_labels[i], transform=ax.transAxes,
+                    horizontalalignment='center', verticalalignment='top',
+                    fontsize=15)
+
+        ax.set_xticklabels([''] * len(ax.get_xticklabels()))
+
+        return ax
 
 if __name__ == '__main__':
     import numpy as np
