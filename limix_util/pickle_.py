@@ -62,12 +62,12 @@ class SlotPickleMixin(object):
 #     file_content = f.read()
 
 def pickle(obj, filepath):
-    with gzip.open(filepath, 'wb') as f:
+    with gzip.open(filepath, 'wb', compresslevel=4) as f:
         cPickle.dump(obj, f, -1)
 
 def unpickle(filepath):
     try:
-        with gzip.open(filepath, 'rb') as f:
+        with gzip.open(filepath, 'rb', compresslevel=4) as f:
             return cPickle.load(f)
     except Exception as e:
         print e
