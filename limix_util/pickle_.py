@@ -10,6 +10,7 @@ from os.path import getmtime
 from time import ctime
 import md5
 import collections
+import subprocess
 
 class SlotPickleMixin(object):
     """Top-class that allows mixing of classes with and without slots.
@@ -85,25 +86,50 @@ def _old_unpickle(filepath):
     with open(filepath, 'rb') as f:
         return cPickle.loads(lz4.loads(f.read()))
 
-def _lastmodif_hash(file_list):
+def _lastmodif_hash_folder(folder, exclude_files=None):
+    if exclude_files is None:
+        exclude_files = []
+    out = subprocess.check_output('md5deep -r %s' % folder, shell=True)
+    lines = out.strip('\n').split('\n')
+
     m = md5.new()
-    for f in file_list:
-        m.update(ctime(getmtime(f)))
+    for line in lines:
+        hash_ = line[0:32]
+        fp = line[34:]
+        if os.path.basename(fp) not in exclude_files:
+            m.update(hash_)
     return m.hexdigest()
 
-def _has_valid_cache(folder, file_list):
-    fc = join(folder, '.h5merge_cache')
+# def _lastmodif_hash(file_list):
+#     m = md5.new()
+#     for f in file_list:
+#         m.update(ctime(getmtime(f)))
+#     return m.hexdigest()
+
+# def _has_valid_cache(folder, file_list):
+#     fc = join(folder, '.h5merge_cache')
+#     if not os.path.exists(fc):
+#         return False
+#     with open(fc, 'r') as f:
+#         hprev = f.read()
+#
+#     hnext = _lastmodif_hash(file_list)
+#
+#     return hprev == hnext
+
+def _has_valid_cache_folder(folder):
+    fc = join(folder, '.merge_cache')
     if not os.path.exists(fc):
         return False
     with open(fc, 'r') as f:
         hprev = f.read()
 
-    hnext = _lastmodif_hash(file_list)
+    hnext = _lastmodif_hash_folder(folder, ['all.pkl', '.merge_cache'])
 
     return hprev == hnext
 
 def _save_cache(folder, lastmodif_hash):
-    fpath = join(folder, '.h5merge_cache')
+    fpath = join(folder, '.merge_cache')
     with open(fpath, 'w') as f:
         f.write(lastmodif_hash)
 
@@ -142,13 +168,14 @@ def pickle_merge(folder, verbose=True):
 
     exist = os.path.exists(join(folder, 'all.pkl'))
 
-    if exist and _has_valid_cache(folder, file_list):
+    # if exist and _has_valid_cache(folder, file_list):
+    if exist and _has_valid_cache_folder(folder):
         if verbose:
             print("   Nothing to do because there is a valid cache.")
         return join(folder, 'all.pkl')
 
     with BeginEnd('Computing hashes'):
-        h = _lastmodif_hash(file_list)
+        h = _lastmodif_hash_folder(folder, ['all.pkl', '.merge_cache'])
 
     subfolders = [d for d in os.listdir(folder) if isdir(join(folder, d))]
 
