@@ -9,6 +9,7 @@ from os.path import isdir
 from os.path import getmtime
 from time import ctime
 import md5
+import collections
 
 class SlotPickleMixin(object):
     """Top-class that allows mixing of classes with and without slots.
@@ -122,7 +123,11 @@ def _merge(file_list):
     out = dict()
     for (i, fpath) in enumerate(file_list):
         d = unpickle(fpath)
-        out.update(d)
+        if isinstance(d, collections.Iterable):
+            out.update(d)
+        else:
+            key = os.path.basename(fpath).split('.')[0]
+            out[int(key)] = d
         pbar.update(i+1)
     pbar.finish()
     return out
