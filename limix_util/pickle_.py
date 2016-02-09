@@ -6,8 +6,6 @@ from progress import ProgressBar
 from misc import BeginEnd
 from os.path import join
 from os.path import isdir
-from os.path import getmtime
-from time import ctime
 import md5
 import collections
 import subprocess
@@ -68,12 +66,17 @@ def pickle(obj, filepath):
         cPickle.dump(obj, f, -1)
 
 def unpickle(filepath):
-    try:
-        with gzip.open(filepath, 'rb', compresslevel=4) as f:
-            return cPickle.load(f)
-    except Exception as e:
-        print e
-        return _old_unpickle(filepath)
+    with gzip.open(filepath, 'rb', compresslevel=4) as f:
+        return cPickle.load(f)
+
+# def unpickle(filepath):
+#     try:
+#         with gzip.open(filepath, 'rb', compresslevel=4) as f:
+#             return cPickle.load(f)
+#     except Exception as e:
+#         print e
+#         return _old_unpickle(filepath)
+
 
 # def _old_pickle(obj, filepath):
 #     import lz4
@@ -81,16 +84,16 @@ def unpickle(filepath):
 #     with open(filepath, 'wb') as f:
 #         f.write(lz4.dumps(data))
 
-def _old_unpickle(filepath):
-    import lz4
-    with open(filepath, 'rb') as f:
-        return cPickle.loads(lz4.loads(f.read()))
+# def _old_unpickle(filepath):
+#     import lz4
+#     with open(filepath, 'rb') as f:
+#         return cPickle.loads(lz4.loads(f.read()))
 
 def _lastmodif_hash_folder(folder, exclude_files=None):
     if exclude_files is None:
         exclude_files = []
     out = subprocess.check_output('md5deep -r %s' % folder, shell=True)
-    lines = out.strip('\n').split('\n')
+    lines = sorted(out.strip('\n').split('\n'))
 
     m = md5.new()
     for line in lines:
@@ -168,7 +171,6 @@ def pickle_merge(folder, verbose=True):
 
     exist = os.path.exists(join(folder, 'all.pkl'))
 
-    # if exist and _has_valid_cache(folder, file_list):
     if exist and _has_valid_cache_folder(folder):
         if verbose:
             print("   Nothing to do because there is a valid cache.")
