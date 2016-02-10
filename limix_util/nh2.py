@@ -1,10 +1,8 @@
 import numpy as np
-from numpy import dot, sqrt, var
+from numpy import dot, sqrt
 from scipy import special
 import scipy as sp
-import scipy.integrate
-import scipy.stats
-import matplotlib.pylab as plt
+# import scipy.integrate
 from gwarped.util.norm import logpdf
 from gwarped.util.norm import pdf
 
@@ -136,38 +134,107 @@ def tl_ge_mom(varg, vare, o, a, p):
     # ((1-a)/(1-p)) * integrate_over_g((tl_e_+mu - E_tl_e_trunc(tg)) * pdf(tg, 0, varg))
 
 
+def recovery_true_heritability_test(hh2, a, p):
+    o = compute_offset(0.5, 0.5, p)
+
+    def cost(h2):
+        h2 = max(h2, 1e-4)
+        h2 = min(h2, 1-1e-4)
+        varg = h2
+        vare = 1. - h2
+
+        g_mu = tl_g_mu(varg, vare, o, a, p)
+        e_mu = tl_g_mu(vare, varg, o, a, p)
+
+        g_mom2 = tl_g_mom2(varg, vare, o, a, p)
+        e_mom2 = tl_g_mom2(vare, varg, o, a, p)
+
+        ge_mom = tl_ge_mom(varg, vare, o, a, p)
+
+        var_tg = (g_mom2 - g_mu**2)
+        var_te = (e_mom2 - e_mu**2)
+        var_tge = (ge_mom - g_mu*e_mu)
+
+        # c = var_tg + var_te + 2*var_tge
+        c = var_tg + var_te
+        # custo = (hh2 - (var_tg + 2*var_tge)/c)**2
+        custo = (hh2 - (var_tg + 2*var_tge)/c)**2
+        # print h2, 'custo', custo
+        return custo
+
+    r = sp.optimize.minimize_scalar(cost, bounds=[1e-4, 1-1e-4], method='Bounded')
+    print '%0.3f --> %0.3f' % (hh2, r['x'])
+    from limix_util.h2 import h2_correct
+    print '%0.3f --> %0.3f' % (hh2, h2_correct(hh2, p, a))
+
+def recovery_true_heritability(hh2, a, p):
+    o = compute_offset(0.5, 0.5, p)
+
+    def cost(h2):
+        h2 = max(h2, 1e-4)
+        h2 = min(h2, 1-1e-4)
+        varg = h2
+        vare = 1. - h2
+
+        g_mu = tl_g_mu(varg, vare, o, a, p)
+        e_mu = tl_g_mu(vare, varg, o, a, p)
+
+        g_mom2 = tl_g_mom2(varg, vare, o, a, p)
+        e_mom2 = tl_g_mom2(vare, varg, o, a, p)
+
+        ge_mom = tl_ge_mom(varg, vare, o, a, p)
+
+        var_tg = (g_mom2 - g_mu**2)
+        var_te = (e_mom2 - e_mu**2)
+        var_tge = (ge_mom - g_mu*e_mu)
+
+        # c = var_tg + var_te + 2*var_tge
+        c = var_tg + var_te
+        # custo = (hh2 - (var_tg + 2*var_tge)/c)**2
+        custo = (hh2 - (var_tg + 2*var_tge)/c)**2
+        # print h2, 'custo', custo
+        return custo
+
+    r = sp.optimize.minimize_scalar(cost, bounds=[1e-4, 1-1e-4], method='Bounded')
+    h2 = r['x']
+    return h2
+
 if __name__ == '__main__':
-    import sys
-    varg = 0.2
-    vare = 0.8
+    # import sys
+    # varg = 0.2
+    # vare = 0.8
+    hh2 = 0.67
     a = 0.5
     p = 0.1
-    o = compute_offset(varg, vare, p)
-    g_mu = tl_g_mu(varg, vare, o, a, p)
-    e_mu = tl_g_mu(vare, varg, o, a, p)
 
-    g_mom2 = tl_g_mom2(varg, vare, o, a, p)
-    e_mom2 = tl_g_mom2(vare, varg, o, a, p)
-
-    ge_mom = tl_ge_mom(varg, vare, o, a, p)
-
-    samples = [sample_tge(varg, vare, o, a) for i in xrange(500000)]
-    tg = [s[0] for s in samples]
-    te = [s[1] for s in samples]
-
-    mu_tg = np.mean(tg)
-    var_tg = np.var(tg)
-
-    mu_te = np.mean(te)
-    var_te = np.var(te)
-
-    cov_tge = np.cov(tg, te)[0,1]
-
-    print g_mu, e_mu, (g_mom2 - g_mu**2), (e_mom2 - e_mu**2), (ge_mom - g_mu*e_mu)
-    print mu_tg, mu_te, var_tg, var_te, cov_tge
-
-    # mom2_tg = var_tg + mu_tg*mu_tg
-
-    # print cov_tge + mu_tg*mu_te
-    # print mom2_tg
-    # print np.mean(tg), np.mean(te)
+    recovery_true_heritability_test(hh2, a, p)
+    #
+    # o = compute_offset(varg, vare, p)
+    # g_mu = tl_g_mu(varg, vare, o, a, p)
+    # e_mu = tl_g_mu(vare, varg, o, a, p)
+    #
+    # g_mom2 = tl_g_mom2(varg, vare, o, a, p)
+    # e_mom2 = tl_g_mom2(vare, varg, o, a, p)
+    #
+    # ge_mom = tl_ge_mom(varg, vare, o, a, p)
+    #
+    # samples = [sample_tge(varg, vare, o, a) for i in xrange(500000)]
+    # tg = [s[0] for s in samples]
+    # te = [s[1] for s in samples]
+    #
+    # mu_tg = np.mean(tg)
+    # var_tg = np.var(tg)
+    #
+    # mu_te = np.mean(te)
+    # var_te = np.var(te)
+    #
+    # cov_tge = np.cov(tg, te)[0,1]
+    #
+    # print g_mu, e_mu, (g_mom2 - g_mu**2), (e_mom2 - e_mu**2), (ge_mom - g_mu*e_mu)
+    # print mu_tg, mu_te, var_tg, var_te, cov_tge
+    #
+    # # mom2_tg = var_tg + mu_tg*mu_tg
+    #
+    # # print cov_tge + mu_tg*mu_te
+    # # print mom2_tg
+    # # print np.mean(tg), np.mean(te)
