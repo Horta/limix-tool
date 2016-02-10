@@ -1,0 +1,5 @@
+{
+  "commands": [
+    "**/*.* : scp {relPath}{filename} ebi-003:~/re/workspace/limix-util/{relPath}/{filename}"
+  ]
+}

@@ -62,7 +62,7 @@ class Cached(object):
 
     def diff(self, func, *args, **kwargs):
         import pprint
-        
+
         if self._diff_running:
             return
 
