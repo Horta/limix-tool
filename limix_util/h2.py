@@ -59,23 +59,27 @@ def haseman_elston_regression(y, K):
     y = asarray(y, float)
     K = asarray(K, float)
     u = np.unique(y)
-    assert np.all([ui in [0., 1.] for ui in u])
+    # assert np.all([ui in [0., 1.] for ui in u])
     return _haseman_elston_regression(y, K)
 
 if __name__ == '__main__':
-    y = np.random.randint(0, 2, 1000)
-    X = np.random.randn(1000, 100)
+    y = np.random.randint(0, 2, 2000)
+    X = np.random.randn(2000, 100)
     X = X - X.mean(0)
     X = X / X.std(0)
     K = X.dot(X.T) / float(100)
-    K += np.eye(1000) * 0.01
+    K += np.eye(2000) * 0.0001
     # K = K / K.diagonal().mean()
-    z = np.random.multivariate_normal(np.zeros(1000), K)
-    y[z<0] = 0
+    z = np.random.multivariate_normal(np.zeros(2000), K)
+    y[z<0] = 0.
     y[z>=0] = 1
     hh2 = haseman_elston_regression(y, K)
-    ascertainment = 0.5
-    prevalence = 0.1
-    h2 = h2_observed_space_correct(hh2, prevalence, ascertainment)
+    from gwarped_exp.method.leap import bernoulli_h2
+    import ipdb; ipdb.set_trace()
+    bernoulli_h2(np.asarray(y, float), np.ones(2000), K, 100, 0.5)
+    print hh2
+    # ascertainment = 0.5
+    # prevalence = 0.1
+    # h2 = h2_observed_space_correct(hh2, prevalence, ascertainment)
     # print hh2, h2
     # print hh2, correct_liability_h2(dichotomous_h2_to_liability_h2(hh2, prevalence), prevalence, ascertainment)
