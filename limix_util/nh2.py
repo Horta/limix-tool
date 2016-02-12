@@ -231,6 +231,38 @@ def recovery_true_heritability_standard(hh2, a, p):
     h2 = r['x']
     return h2
 
+def recovery_true_heritability_nh3(hh2, a, p):
+    o = compute_offset(0.5, 0.5, p)
+
+    def cost(h2):
+        h2 = max(h2, 1e-4)
+        h2 = min(h2, 1-1e-4)
+        varg = h2
+        vare = 1. - h2
+
+        g_mu = tl_g_mu(varg, vare, o, a, p)
+        e_mu = tl_g_mu(vare, varg, o, a, p)
+
+        g_mom2 = tl_g_mom2(varg, vare, o, a, p)
+        e_mom2 = tl_g_mom2(vare, varg, o, a, p)
+
+        ge_mom = tl_ge_mom(varg, vare, o, a, p)
+
+        var_tg = (g_mom2 - g_mu**2)
+        var_te = (e_mom2 - e_mu**2)
+        var_tge = (ge_mom - g_mu*e_mu)
+
+        c = var_tg + var_te + 2*var_tge
+        # c = var_tg + var_te
+        custo = (hh2 - (var_tg + 2*var_tge)/c)**2
+        # custo = (hh2 - (var_tg + 2*var_tge)/c)**2
+        # print h2, 'custo', custo
+        return custo
+
+    r = sp.optimize.minimize_scalar(cost, bounds=[1e-4, 1-1e-4], method='Bounded')
+    h2 = r['x']
+    return h2
+
 
 if __name__ == '__main__':
     # import sys
