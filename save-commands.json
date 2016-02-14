@@ -1,6 +1,0 @@
-{
-  "commands": [
-    "**/*.* : scp {relPath}{filename} ebi-003:~/re/workspace/limix-util/{relPath}/{filename}",
-    "**/*.* : scp {relPath}{filename} yoda-login:~/workspace/limix-util/{relPath}/{filename}"
-  ]
-}
