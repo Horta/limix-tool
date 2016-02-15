@@ -30,7 +30,7 @@ def setup_package():
     os.chdir(src_path)
     sys.path.insert(0, src_path)
 
-    build_requires = ['numpy', 'scipy']
+    build_requires = ['numpy', 'scipy', 'progressbar', 'humanfriendly']
 
     metadata = dict(
         name='limix-util',
