@@ -31,7 +31,7 @@ def setup_package():
     sys.path.insert(0, src_path)
 
     build_requires = ['numpy', 'scipy', 'progressbar', 'humanfriendly',
-                      'h5py']
+                      'h5py', 'numba', 'cython']
 
     metadata = dict(
         name='limix-util',
