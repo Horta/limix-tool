@@ -4,9 +4,15 @@ import sys
 import imp
 import textwrap
 
+try:
+    import numpy
+except ImportError:
+    print('Fatal: could not import numpy. Please, make sure it is installed.')
+    sys.exit(1)
+
 MAJOR               = 0
 MINOR               = 1
-MICRO               = 14
+MICRO               = 25
 ISRELEASED          = True
 VERSION             = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
@@ -120,17 +126,11 @@ def setup_package():
     filename = os.path.join(dirname, 'limix_util', 'version.py')
     write_version_py(VERSION, ISRELEASED, filename=filename)
 
-    build_requires = ['numpy', 'setuptools']
-    install_requires = build_requires + ['scipy', 'progressbar',
-                                         'humanfriendly', 'h5py']
-
     metadata = dict(
         name='limix-util',
         maintainer = "Limix Developers",
         maintainer_email = "horta@ebi.ac.uk",
         test_suite='setup.get_test_suite',
-        setup_requires=build_requires,
-        install_requires=install_requires,
         packages=['limix_util']
     )
 

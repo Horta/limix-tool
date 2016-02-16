@@ -1,0 +1,30 @@
+FROM python:2
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+RUN apt-get update
+RUN apt-get install build-essential -y
+RUN apt-get install gfortran -y
+RUN apt-get install libopenblas-dev -y
+RUN pip install numpy
+RUN mkdir /limix-util
+WORKDIR /limix-util
+ADD . /limix-util
+RUN python setup.py test
+
+
+
+# RUN apt-get install libblas-dev liblapacke-dev libopenblas-dev -y
+# CMD [ "python", "./your-daemon-or-script.py" ]
+# FROM continuumio/miniconda:latest
+
+
+
+# WORKDIR /srv
+# ADD ./environment.yml /srv/environment.yml
+# RUN conda config --add channels https://conda.anaconda.org/horta
+# RUN conda env create
+# ENV CONDA_ACTIVATE "source activate limix-util"
+#
+# RUN mkdir /limix-util
+# WORKDIR /limix-util
+# ADD . /limix-util
+# RUN $CONDA_ACTIVATE && python setup.py test

@@ -1,0 +1,27 @@
+FROM continuumio/miniconda:latest
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+
+RUN apt-get update && apt-get install libamd2.2.0 \
+libblas3gf \
+libc6 \
+libgcc1 \
+libgfortran3 \
+liblapack3gf \
+libumfpack5.4.0 \
+libstdc++6 \
+build-essential \
+gfortran \
+python-all-dev \
+libatlas-base-dev -y
+
+
+RUN conda update conda -y \
+&& conda install -y anaconda=2.5 numpy conda-build
+
+# ADD ./environment.yml /srv/environment.yml
+# RUN conda config --add channels https://conda.anaconda.org/horta
+# RUN conda env create
+# ENV CONDA_ACTIVATE "source activate limix-util"
+
+# WORKDIR /root
+# RUN $CONDA_ACTIVATE && conda skeleton pypi limix-util
