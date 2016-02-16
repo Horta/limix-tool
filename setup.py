@@ -12,7 +12,7 @@ except ImportError:
 
 MAJOR               = 0
 MINOR               = 1
-MICRO               = 25
+MICRO               = 28
 ISRELEASED          = True
 VERSION             = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
@@ -126,21 +126,30 @@ def setup_package():
     filename = os.path.join(dirname, 'limix_util', 'version.py')
     write_version_py(VERSION, ISRELEASED, filename=filename)
 
+    build_requires = ['numpy==1.9.3']
+    install_requires = ['numpy==1.9.3']
+
     metadata = dict(
         name='limix-util',
         maintainer = "Limix Developers",
         maintainer_email = "horta@ebi.ac.uk",
         test_suite='setup.get_test_suite',
-        packages=['limix_util']
+        packages=['limix_util'],
+        setup_requires=build_requires,
+        install_requires=install_requires
     )
 
     run_build = parse_setuppy_commands()
 
-    from setuptools import setup
+    # from setuptools import setup
+    print 'Ponto 1'
     if run_build:
+        print 'Ponto 2'
         from numpy.distutils.core import setup
         metadata['configuration'] = configuration
     else:
+        from setuptools import setup
+        print 'Ponto 3'
         # Version number is added to metadata inside configuration() if build
         # is run.
         metadata['version'] = get_version_info(VERSION, ISRELEASED,

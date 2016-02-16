@@ -16,7 +16,7 @@ libatlas-base-dev -y
 
 
 RUN conda update conda -y \
-&& conda install -y anaconda=2.5 numpy conda-build
+&& conda install -y anaconda=2.5 numpy==1.9.3 conda-build
 
 # ADD ./environment.yml /srv/environment.yml
 # RUN conda config --add channels https://conda.anaconda.org/horta
