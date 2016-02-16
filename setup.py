@@ -1,4 +1,5 @@
 import setuptools
+from setuptools import setup
 from numpy.distutils.core import setup
 import os
 import sys
@@ -36,6 +37,8 @@ def setup_package():
 
     metadata = dict(
         name='limix-util',
+        maintainer = "Limix Developers",
+        maintainer_email = "horta@ebi.ac.uk",
         test_suite='setup.get_test_suite',
         setup_requires=build_requires,
         install_requires=install_requires,
