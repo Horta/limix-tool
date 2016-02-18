@@ -114,6 +114,21 @@ class ErrBarPlot(BarPlotBase):
 
         return ax
 
+    def legend(self):
+        ax = plt.gca()
+        fakes = []
+        for l in self._labels:
+            fake, = ax.plot([1,1], color=self._get_color(l))
+            fakes.append(fake)
+
+        labels = self._labels
+
+        ax.legend(fakes, labels, bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
+                ncol=len(labels), mode="expand", borderaxespad=0.)
+
+        for fake in fakes:
+            fake.set_visible(False)
+
 class FillBarPlot(BarPlotBase):
     def __init__(self):
         super(FillBarPlot, self).__init__()
