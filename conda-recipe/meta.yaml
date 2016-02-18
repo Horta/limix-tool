@@ -1,0 +1,31 @@
+package:
+  name: limix_util
+  version: 0.1.28
+
+source:
+  fn:  limix-util-0.1.28.tar.gz
+  url: https://pypi.python.org/packages/source/l/limix-util/limix-util-0.1.28.tar.gz
+  md5: 1e70967d32ba1ce00322940601c84195
+
+requirements:
+  build:
+    - python
+    - numpy
+    - cython
+    - setuptools
+
+  run:
+    - python
+    - numpy
+    - scipy
+    - h5py
+    - humanfriendly
+    - matplotlib
+    - numba
+    - setuptools
+    - progressbar
+    - cython
+
+about:
+  home: http://www.ebi.ac.uk
+  license: Private
