@@ -186,3 +186,85 @@ class Memmap(object):
     def __exit__(self, *args):
         del self._X
         shutil.rmtree(self._folder)
+
+class XBuffRows(object):
+    def __init__(self, X, row_indices, col_slice, buff_size=1000):
+        buff_size = min(buff_size, X.shape[0])
+        self._X = X
+        self._row = 0
+        self._row_buff = -1
+        self._buff_size = buff_size
+        self._row_indices = row_indices
+        self._col_slice = col_slice
+        ncols = len(np.empty(X.shape[1])[col_slice])
+        self._Xbuff = np.empty((len(row_indices), ncols), dtype=X.dtype)
+
+    def __iter__(self):
+        return self
+
+    def _extract_buffer(self, row_indices):
+        cs = self._col_slice
+        if isinstance(self._X, h5py.Dataset):
+            srii = np.argsort(row_indices)
+            sri = row_indices[srii]
+            try:
+                self._X.read_direct(self._Xbuff, np.s_[sri,cs], np.s_[srii,:])
+            except TypeError:
+                for (i, csi) in enumerate(cs):
+                    self._X.read_direct(self._Xbuff[np.s_[srii,i]], np.s_[sri,csi],
+                                        np.s_[:])
+        else:
+            self._Xbuff[:len(row_indices),:] = self._X[row_indices,cs]
+
+    def next(self):
+        if self._row >= len(self._row_indices):
+            raise StopIteration
+
+        if self._row_buff == -1:
+            l = self._row
+            r = l + self._buff_size
+            r = min(r, len(self._row_indices))
+            self._extract_buffer(self._row_indices[l:r])
+            self._row_buff = 0
+
+        vec = self._Xbuff[self._row_buff,:]
+        self._row_buff += 1
+        if self._row_buff >= self._Xbuff.shape[0]:
+            self._row_buff = -1
+        self._row += 1
+
+        return vec
+
+if __name__ == '__main__':
+    import numpy as np
+    random = np.random.RandomState(394873)
+    X = random.randn(10, 10)
+
+    with h5py.File('tmp.hdf5', 'w') as f:
+        f.create_dataset('X', data=X)
+
+    with h5py.File('tmp.hdf5', 'r') as f:
+        X = f['X']
+        row_indices = random.permutation(X.shape[0])
+        col_slice = np.s_[:4]
+        Xcopy = X[:][row_indices, col_slice].copy()
+
+        Xb = XBuffRows(X, row_indices, col_slice, buff_size=5000)
+        iterrows = iter(Xb)
+        i = 0
+        for row in iterrows:
+            np.testing.assert_almost_equal(Xcopy[i,:], row)
+            i += 1
+    # print row.next()
+    # print row.next()
+    # print row.next()
+    # print row.next()
+    # print row.next()
+    # print row.next()
+    # print row.next()
+    # print row.next()
+    # print row.next()
+    # print row.next()
+    # print row.next()
+    # print row.next()
+    # print row.next()
