@@ -1,17 +1,17 @@
 #!/bin/bash
 
-#conda build conda-recipe --no-anaconda-upload
-#if [ $? -ne 0 ]
-#then
-#  exit
-#fi
+conda build conda-recipe --no-anaconda-upload
+if [ $? -ne 0 ]
+then
+ exit
+fi
 
 filepath=`conda build conda-recipe --output`
-#mkdir -p conda-tmp
-#conda convert $filepath -p all -o conda-tmp
+mkdir -p conda-bins
+conda convert $filepath -p all -o conda-bins
 
-conda_bins=`find conda-tmp -type f -name '*.tar.bz2'`
+conda_bins=`find conda-bins -type f -name '*.tar.bz2'`
 for i in $conda_bins
 do
-  anaconda upload $i
+  anaconda upload $i -i
 done
