@@ -1,0 +1,9 @@
+FROM continuumio/anaconda:latest
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+
+COPY ./conda-install.sh /
+ENTRYPOINT ["/conda-install.sh"]
+
+RUN anaconda login
+RUN TOKEN=$(anaconda auth --create --name download-token) conda \
+          install -c https://conda.anaconda.org/t/$TOKEN/horta limix_util

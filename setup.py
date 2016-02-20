@@ -121,12 +121,15 @@ def setup_package():
     filename = os.path.join(dirname, 'limix_util', 'version.py')
     write_version_py(VERSION, ISRELEASED, filename=filename)
 
+    install_requires = ['progressbar>=2.3.0']
+
     metadata = dict(
         name='limix-util',
         maintainer = "Limix Developers",
         maintainer_email = "horta@ebi.ac.uk",
         test_suite='setup.get_test_suite',
-        packages=['limix_util']
+        packages=['limix_util'],
+        install_requires=install_requires
     )
 
     run_build = parse_setuppy_commands()
