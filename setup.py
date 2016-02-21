@@ -5,7 +5,7 @@ import imp
 import textwrap
 
 try:
-    import numpy
+    imp.find_module('numpy')
 except ImportError:
     print('Fatal: could not import numpy. Please, make sure it is installed.')
     sys.exit(1)
@@ -110,7 +110,7 @@ def setup_package():
                           os.path.join(dirname, 'build_util', '__init__.py'))
     write_version_py = mod.write_version_py
     get_version_info = mod.get_version_info
-    # generate_cython = mod.generate_cython
+    generate_cython = mod.generate_cython
 
     src_path = os.path.dirname(os.path.abspath(sys.argv[0]))
     old_path = os.getcwd()
@@ -121,7 +121,7 @@ def setup_package():
     filename = os.path.join(dirname, 'limix_util', 'version.py')
     write_version_py(VERSION, ISRELEASED, filename=filename)
 
-    install_requires = ['progressbar>=2.3.0']
+    install_requires = ['progressbar', 'humanfriendly', 'numba']
 
     metadata = dict(
         name='limix-util',
@@ -141,6 +141,11 @@ def setup_package():
         from numpy.distutils.core import setup
         metadata['configuration'] = configuration
     else:
+        cwd = os.path.abspath(os.path.dirname(__file__))
+        if not os.path.exists(os.path.join(cwd, 'PKG-INFO')):
+            # Generate Cython sources, unless building from source release
+            generate_cython(['limix_util/plink_'])
+        
         # Version number is added to metadata inside configuration() if build
         # is run.
         metadata['version'] = get_version_info(VERSION, ISRELEASED,

@@ -20,6 +20,7 @@ if not __LIMIX_UTIL_SETUP__:
     from misc import ring
     from misc import BeginEnd
     from misc import group_by
+    import system_
     from progress import ProgressBar
     import cached
 

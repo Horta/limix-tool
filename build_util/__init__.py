@@ -76,12 +76,11 @@ if not release:
     finally:
         a.close()
 
-def generate_cython():
+def generate_cython(folders):
     cwd = os.path.abspath(os.path.dirname(__file__))
     print("Cythonizing sources")
     p = subprocess.call([sys.executable,
-                          os.path.join(cwd, 'cythonize.py'),
-                          'limix_qep/special'],
+                         os.path.join(cwd, 'cythonize.py')] + folders,
                          cwd=cwd)
     if p != 0:
         raise RuntimeError("Running cythonize failed!")
