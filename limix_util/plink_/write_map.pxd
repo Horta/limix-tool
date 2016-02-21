@@ -1,2 +1,2 @@
-cpdef write_map(dst_filepath, int[:] chroms, list rss,
-                 int[:] gds, int[:] bps)
+cpdef write_map(dst_filepath, long[:] chroms, list rss,
+                 long[:] gds, long[:] bps)

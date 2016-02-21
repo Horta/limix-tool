@@ -81,6 +81,6 @@ def generate_cython(folders):
     print("Cythonizing sources")
     p = subprocess.call([sys.executable,
                          os.path.join(cwd, 'cythonize.py')] + folders,
-                         cwd=cwd)
+                         cwd=os.path.join(cwd, '../'))
     if p != 0:
         raise RuntimeError("Running cythonize failed!")

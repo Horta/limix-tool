@@ -52,10 +52,9 @@ def create_ped(dst_filepath, y, G):
 #  Base-pair position (bp units)
 def create_map(dst_filepath, chroms, rss=None, gds=None, bps=None):
     chroms = asarray(chroms, int)
-    import ipdb; ipdb.set_trace()
 
     if rss is None or gds is None or bps is None:
-        arr = np.arange(len(chroms), int)
+        arr = np.arange(len(chroms), dtype=int)
 
     if rss is None:
         rss = ['rs%d' %i for i in arr]
@@ -74,4 +73,4 @@ if __name__ == '__main__':
     G = random.randint(0, 3, (4, 10))
     y = random.randint(0, 2, 4)
     create_ped(dst_filepath, y, G)
-    create_map('/Users/horta/out.map', np.ones(10))
+    create_map('/Users/horta/out.map', np.ones(30))

@@ -82,7 +82,58 @@ def parse_setuppy_commands():
         """))
         return False
 
+        # The following commands aren't supported.  They can only be executed when
+    # the user explicitly adds a --force command-line argument.
+    bad_commands = dict(
+        test="""
+            `setup.py test` is not supported.  Use one of the following
+            instead:
+              - `python runtests.py`              (to build and test)
+              - `python runtests.py --no-build`   (to test installed numpy)
+              - `>>> numpy.test()`           (run tests for installed numpy
+                                              from within an interpreter)
+            """,
+        upload="""
+            `setup.py upload` is not supported, because it's insecure.
+            Instead, build what you want to upload and upload those files
+            with `twine upload -s <filenames>` instead.
+            """,
+        upload_docs="`setup.py upload_docs` is not supported",
+        easy_install="`setup.py easy_install` is not supported",
+        clean="""
+            `setup.py clean` is not supported, use one of the following instead:
+              - `git clean -xdf` (cleans all files)
+              - `git clean -Xdf` (cleans all versioned files, doesn't touch
+                                  files that aren't checked into the git repo)
+            """,
+        check="`setup.py check` is not supported",
+        register="`setup.py register` is not supported",
+        bdist_dumb="`setup.py bdist_dumb` is not supported",
+        bdist="`setup.py bdist` is not supported",
+        build_sphinx="""
+            `setup.py build_sphinx` is not supported, use the
+            Makefile under doc/""",
+        flake8="`setup.py flake8` is not supported, use flake8 standalone",
+        )
+    bad_commands['nosetests'] = bad_commands['test']
+    for command in ('upload_docs', 'easy_install', 'bdist', 'bdist_dumb',
+                     'register', 'check', 'install_data', 'install_headers',
+                     'install_lib', 'install_scripts', ):
+        bad_commands[command] = "`setup.py %s` is not supported" % command
+
+    for command in bad_commands.keys():
+        if command in sys.argv[1:]:
+            print(textwrap.dedent(bad_commands[command]) +
+                  "\nAdd `--force` to your command to use it anyway if you "
+                  "must (unsupported).\n")
+            sys.exit(1)
+
+    # If we got here, we didn't detect what setup.py command was given
+    import warnings
+    warnings.warn("Unrecognized setuptools command, proceeding with "
+                  "generating Cython sources and expanding templates")
     return True
+
 
 def get_test_suite():
     from unittest import TestLoader
@@ -136,16 +187,11 @@ def setup_package():
 
     from setuptools import setup
 
-    # from setuptools import setup
     if run_build:
+        generate_cython(['limix_util/plink_'])
         from numpy.distutils.core import setup
         metadata['configuration'] = configuration
     else:
-        cwd = os.path.abspath(os.path.dirname(__file__))
-        if not os.path.exists(os.path.join(cwd, 'PKG-INFO')):
-            # Generate Cython sources, unless building from source release
-            generate_cython(['limix_util/plink_'])
-        
         # Version number is added to metadata inside configuration() if build
         # is run.
         metadata['version'] = get_version_info(VERSION, ISRELEASED,
