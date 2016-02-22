@@ -15,6 +15,7 @@ if not __LIMIX_UTIL_SETUP__:
     import plot_
     import inspect_
     import array_
+    import object_
     import h2
     import data_format
     from misc import traverse_dict

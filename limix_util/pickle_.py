@@ -1,14 +1,48 @@
+import importlib
 import gzip
 import cPickle
 import os
 import path_
 from progress import ProgressBar
 from misc import BeginEnd
+import object_
 from os.path import join
 from os.path import isdir
 import md5
 import collections
 import subprocess
+
+class PickleByName(object):
+    def __init__(self):
+        self._signature_only_attrs = set()
+
+    def set_signature_only_attr(self, attr_name):
+        self._signature_only_attrs.add(attr_name)
+
+    def __getstate__(self):
+        d = self.__dict__.copy()
+        for attr_name in self._signature_only_attrs:
+            o = getattr(self, attr_name)
+            d[attr_name + '_fullname'] = object_.fullname(o)
+            d[attr_name + '_init_dict'] = o.init_dict()
+            del d[attr_name]
+        return d
+
+    def __setstate__(self, d):
+
+        for attr_name in self._signature_only_attrs:
+            fn = d[attr_name + '_fullname']
+            k = fn.rfind(".")
+            module_name, class_name = fn[:k], fn[k+1:]
+            init_dict = d[attr_name + '_init_dict']
+            mod = importlib.import_module(module_name)
+            class_ = getattr(mod, class_name)
+            o = class_(**init_dict)
+            d[attr_name] = o
+            del d[attr_name + '_fullname']
+            del d[attr_name + '_init_dict']
+
+        self.__dict__.update(d)
 
 class SlotPickleMixin(object):
     """Top-class that allows mixing of classes with and without slots.
