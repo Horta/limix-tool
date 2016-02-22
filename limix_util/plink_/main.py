@@ -1,7 +1,10 @@
 from numpy import asarray
 import numpy as np
 from numba import jit, uint8, int64, void
-from write_map import write_map
+from limix_util.plink_.write_map import write_map
+from limix_util.plink_.write_phen import write_phen_int
+from limix_util import array_
+import subprocess
 
 @jit(void(uint8[:], int64[:]), cache=True, nopython=True, nogil=True)
 def _create_ped_line(line, row):
@@ -66,6 +69,30 @@ def create_map(dst_filepath, chroms, rss=None, gds=None, bps=None):
         bps = arr
 
     write_map(dst_filepath, chroms, rss, gds, bps)
+
+def create_phen(filepath, y):
+    y = asarray(y)
+    if array_.isint_alike(y):
+        write_phen_int(filepath, asarray(y, int))
+    else:
+        raise NotImplementedError('create_phen is not suitable for non-int'+
+                                  ' phenotype yet.')
+    # np.savetxt(filepath, [family_ids, individual_ids, y], fmt=fmt)
+
+    # l = [('Family ID', Series(np.arange(n)+1)),
+    #      ('Individual ID', Series(np.arange(n)+1)),
+    #      ('Phenotype', Series(np.asarray(y, dtype=phe_type)))]
+    # d = DataFrame(OrderedDict(l))
+    # d.to_csv(filepath + '.phe', sep=' ', header=False, index=False,
+    #          na_rep='NA')
+
+def create_bed(filepath, na_rep='-9', cod_type='binary'):
+    cmd = ["plink", "--file", filepath, "--out", filepath, "--make-bed",
+          "--noweb", '--missing-phenotype', na_rep]
+    if cod_type == 'binary':
+        cmd.append('--1')
+    subprocess.call(cmd)
+
 
 if __name__ == '__main__':
     dst_filepath = '/Users/horta/out.ped'
