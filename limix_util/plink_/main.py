@@ -1,3 +1,4 @@
+import logging
 from numpy import asarray
 import numpy as np
 from numba import jit, uint8, int64, void
@@ -80,11 +81,14 @@ def create_phen(filepath, y):
 
 def create_bed(filepath, na_rep='-9', cod_type='binary'):
     cmd = ["plink", "--file", filepath, "--out", filepath, "--make-bed",
-          "--noweb", '--missing-phenotype', na_rep]
+          "--noweb", '--missing-phenotype', na_rep, '--allow-no-sex']
     if cod_type == 'binary':
         cmd.append('--1')
-    subprocess.call(cmd)
-
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = p.communicate()
+    logging.getLogger(__file__).debug(out)
+    if len(err) > 0:
+        logging.getLogger(__file__).warn(err)
 
 if __name__ == '__main__':
     dst_filepath = '/Users/horta/out.ped'
