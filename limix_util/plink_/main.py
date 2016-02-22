@@ -77,14 +77,6 @@ def create_phen(filepath, y):
     else:
         raise NotImplementedError('create_phen is not suitable for non-int'+
                                   ' phenotype yet.')
-    # np.savetxt(filepath, [family_ids, individual_ids, y], fmt=fmt)
-
-    # l = [('Family ID', Series(np.arange(n)+1)),
-    #      ('Individual ID', Series(np.arange(n)+1)),
-    #      ('Phenotype', Series(np.asarray(y, dtype=phe_type)))]
-    # d = DataFrame(OrderedDict(l))
-    # d.to_csv(filepath + '.phe', sep=' ', header=False, index=False,
-    #          na_rep='NA')
 
 def create_bed(filepath, na_rep='-9', cod_type='binary'):
     cmd = ["plink", "--file", filepath, "--out", filepath, "--make-bed",
