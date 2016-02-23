@@ -14,16 +14,26 @@ builtins.__LIMIX_UTIL_SETUP__ = True
 PKG_NAME            = "limix_util"
 MAJOR               = 0
 MINOR               = 1
-MICRO               = 0
+MICRO               = 1
 ISRELEASED          = False
 VERSION             = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
 try:
     imp.find_module('limix_build')
 except ImportError:
-    print('Fatal: could not import limix_build. Please, make sure it is ' +
-          'installed before attempting to build this package.')
-    sys.exit(1)
+    import subprocess
+    r = subprocess.call("pip install limix_build", shell=True)
+    if r != 0:
+        print('Fatal: could not install limix_build using pip. We need this' +
+              ' package before we can build.')
+        sys.exit(1)
+
+    try:
+        imp.find_module('limix_build')
+    except ImportError:
+        print('Fatal: could not import limix_build. Please, make sure it is ' +
+              'installed before attempting to build this package.')
+        sys.exit(1)
 
 from limix_build import write_version_py
 from limix_build import parse_setuppy_commands
@@ -62,6 +72,8 @@ def setup_package():
         name=PKG_NAME,
         maintainer="Limix Developers",
         maintainer_email = "horta@ebi.ac.uk",
+        license="BSD",
+        url='http://pmbio.github.io/limix/',
         test_suite='setup.get_test_suite',
         packages=[PKG_NAME],
         install_requires=['scipy', 'h5py', 'matplotlib', 'numba',
