@@ -1,45 +1,31 @@
-# After changing this file, check it on:
-#   http://lint.travis-ci.org/
 language: python
-
-sudo: required
-dist: trusty
-
-# Travis whitelists the installable packages, additions can be requested
-#   https://github.com/travis-ci/apt-package-whitelist
-addons:
-  apt:
-    packages: &common_packages
-      - gfortran
-      - libatlas-dev
-      - libatlas-base-dev
-      - libhdf5-serial-dev
-      - python-scipy
-      # Speedup builds, particularly when USE_CHROOT=1
-      - eatmydata
-
-cache:
-  directories:
-    - $HOME/.cache/pip
-
 python:
   - 2.7
+  - 3.3
+notifications:
+  email: false
 
+# Setup anaconda
 before_install:
-  - python -c "import scipy; print scipy.__version__"
-  - uname -a
-  - free -m
-  - df -h
-  - ulimit -a
-  - mkdir builds
-  - pushd builds
-  - python -V
-  - pip install --upgrade pip setuptools
-  # Speed up install by not compiling Cython
-  - pip install --install-option="--no-cython-compile" Cython
-  - popd
+  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b
+  - export PATH=/home/travis/miniconda/bin:$PATH
+  - conda update --yes conda
+  # The next couple lines fix a crash with multiprocessing on Travis and are not specific to using Miniconda
+  - sudo rm -rf /dev/shm
+  - sudo ln -s /run/shm /dev/shm
+# Install packages
+install:
+  - conda install --yes python=$TRAVIS_PYTHON_VERSION atlas numpy scipy matplotlib nose dateutil pandas statsmodels
+  # Coverage packages are on my binstar channel
+  - conda install --yes -c dan_blanchard python-coveralls nose-cov
+  - python setup.py install
 
-script: python setup.py test
+# Run test
+script:
+  - nosetests --with-cov --cov limix_util --cov-config .coveragerc --logging-level=INFO
 
-# after_success:
-#   - ./tools/travis-upload-wheel.sh
+# Calculate coverage
+after_success:
+  - coveralls --config_file .coveragerc
