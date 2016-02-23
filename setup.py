@@ -13,7 +13,7 @@ builtins.__LIMIX_UTIL_SETUP__ = True
 
 PKG_NAME            = "limix_util"
 MAJOR               = 0
-MINOR               = 1
+MINOR               = 0
 MICRO               = 1
 ISRELEASED          = False
 VERSION             = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
@@ -40,6 +40,7 @@ from limix_build import parse_setuppy_commands
 from limix_build import generate_cython
 from limix_build import get_version_info
 from limix_build import get_version_filename
+from limix_build import avoid_requires
 
 def get_test_suite():
     from unittest import TestLoader
@@ -68,8 +69,12 @@ def setup_package():
 
     write_version_py(PKG_NAME, VERSION, ISRELEASED)
 
-    install_requires = ['matplotlib', 'numba',
-                        'humanfriendly', 'progressbar']
+    install_requires = ['humanfriendly', 'progressbar']
+
+    avoid_requires('scipy', install_requires)
+    avoid_requires('h5py', install_requires)
+    avoid_requires('matplotlib', install_requires)
+    avoid_requires('numba', install_requires)
 
     metadata = dict(
         name=PKG_NAME,
