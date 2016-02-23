@@ -13,7 +13,7 @@ addons:
       - gfortran
       - libatlas-dev
       - libatlas-base-dev
-      - libhdf5-dev
+      - libhdf5-serial-dev
       # Speedup builds, particularly when USE_CHROOT=1
       - eatmydata
 
