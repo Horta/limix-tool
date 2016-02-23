@@ -40,7 +40,7 @@ before_install:
   # Appears we had some issues with certificates on Travis. It looks like
   # bumping to 14.0.6 will help.
   - pip install -U 'virtualenv==14.0.6'
-  - virtualenv --python=python venv
+  - virtualenv --python=python --system-site-packages venv
   - source venv/bin/activate
   - python -V
   - pip install --upgrade pip setuptools
