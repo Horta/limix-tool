@@ -69,7 +69,7 @@ def setup_package():
 
     write_version_py(PKG_NAME, VERSION, ISRELEASED)
 
-    install_requires = ['humanfriendly', 'progressbar']
+    install_requires = ['humanfriendly', 'progressbar', 'cython']
 
     avoid_requires('scipy', install_requires)
     avoid_requires('h5py', install_requires)
