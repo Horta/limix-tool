@@ -68,6 +68,15 @@ def setup_package():
 
     write_version_py(PKG_NAME, VERSION, ISRELEASED)
 
+    install_requires = ['h5py', 'matplotlib', 'numba',
+                        'humanfriendly', 'progressbar']
+    try:
+        imp.find_module('scipy')
+    except ImportError:
+        r = subprocess.call("conda install scipy -y", shell=True)
+        if r != 0:
+            install_requires += ['scipy']
+
     metadata = dict(
         name=PKG_NAME,
         maintainer="Limix Developers",
@@ -76,8 +85,7 @@ def setup_package():
         url='http://pmbio.github.io/limix/',
         test_suite='setup.get_test_suite',
         packages=[PKG_NAME],
-        install_requires=['scipy', 'h5py', 'matplotlib', 'numba',
-                          'humanfriendly', 'progressbar'],
+        install_requires=install_requires,
         setup_requires=[]
     )
 
