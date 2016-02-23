@@ -39,11 +39,12 @@ before_install:
   # pinned `virtualenv` to the last known working version to avoid this failure.
   # Appears we had some issues with certificates on Travis. It looks like
   # bumping to 14.0.6 will help.
-  - pip install -U 'virtualenv==14.0.6'
-  - virtualenv --python=python --system-site-packages venv
-  - source venv/bin/activate
+  # - pip install -U 'virtualenv==14.0.6'
+  # - virtualenv --python=python --system-site-packages venv
+  # - source venv/bin/activate
   - python -V
   - pip install --upgrade pip setuptools
+  - python -c "import scipy; print scipy.__version__"
   # - pip install nose
   # pip install coverage
   # Speed up install by not compiling Cython
