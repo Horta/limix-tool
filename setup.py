@@ -68,14 +68,8 @@ def setup_package():
 
     write_version_py(PKG_NAME, VERSION, ISRELEASED)
 
-    install_requires = ['h5py', 'matplotlib', 'numba',
+    install_requires = ['matplotlib', 'numba',
                         'humanfriendly', 'progressbar']
-    try:
-        imp.find_module('scipy')
-    except ImportError:
-        r = subprocess.call("conda install scipy -y", shell=True)
-        if r != 0:
-            install_requires += ['scipy']
 
     metadata = dict(
         name=PKG_NAME,
