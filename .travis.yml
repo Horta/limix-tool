@@ -15,14 +15,14 @@ addons:
       - libatlas-base-dev
       - eatmydata
       - libhdf5-serial-dev
+      - libhdf5-serial
       - libpng12-dev
       - libfreetype6-dev
       - python-dev
-      - libpython-dev
-      - libblas3
+      - libblas-dev
       - libc6
-      - liblapack3
       - python-nose
+      - hdf5-tools
 
 python:
   - 2.7
@@ -30,7 +30,7 @@ python:
 
 env:
   - BARE_ENV=true
-  - BARE_ENV=false
+  # - BARE_ENV=false
 
 before_install:
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then

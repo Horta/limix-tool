@@ -76,7 +76,9 @@ def setup_package():
         zip_safe=False
     )
 
-    cythonize(PKG_NAME)
+    cwd = os.path.abspath(os.path.dirname(__file__))
+    if not os.path.exists(os.path.join(cwd, 'PKG-INFO')):
+        cythonize(PKG_NAME)
 
     try:
         setup(**metadata)
