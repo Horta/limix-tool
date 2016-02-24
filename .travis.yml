@@ -14,11 +14,11 @@ addons:
       - libatlas-dev
       - libatlas-base-dev
       - eatmydata
-      - libhdf5-dev
-      - libhdf5-7
+      - libhdf5-serial-dev
       - libpng12-dev
       - libfreetype6-dev
       - python-dev
+      - libpython-dev
       - libblas3
       - libc6
       - liblapack3
