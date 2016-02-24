@@ -35,8 +35,19 @@ env:
   # - BARE_ENV=false
 
 before_install:
+  - ls
+  - mkdir "$HOME/hdf5" && pushd "$HOME/hdf5"
+  - ls
+  - wget http://www.hdfgroup.org/ftp/HDF5/current/src/hdf5-1.8.16.tar.gz
+  - ls
+  - tar xzf hdf5-1.8.16.tar.gz
+  - ls
+  - cd hdf5-1.8.16
+  - ./configure
+  - make
+  - make install
   - file /usr/include/hdf5.h
-  - ls /usr/include/
+  - popd
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
     else
