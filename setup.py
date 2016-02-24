@@ -44,6 +44,10 @@ def setup_package():
 
     install_requires = ['numba', 'humanfriendly', 'progressbar']
     try:
+        import numpy
+    except ImportError:
+        install_requires.append('numpy')
+    try:
         import scipy
     except ImportError:
         install_requires.append('scipy')
@@ -57,6 +61,10 @@ def setup_package():
         install_requires.append('matplotlib')
 
     setup_requires = []
+    try:
+        import numpy
+    except ImportError:
+        setup_requires.append('numpy')
     try:
         import cython
     except ImportError:
