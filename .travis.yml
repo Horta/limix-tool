@@ -19,6 +19,10 @@ addons:
       - libpng12-dev
       - libfreetype6-dev
       - python-dev
+      - libblas3
+      - libc6
+      - liblapack3
+      - python-nose
 
 python:
   - 2.7
