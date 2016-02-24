@@ -4,6 +4,21 @@ dist: trusty
 cache:
   - pip
   - apt
+  - ccache
+
+addons:
+  apt:
+    packages: &common_packages
+      - build-essential
+      - gfortran
+      - libatlas-dev
+      - libatlas-base-dev
+      - eatmydata
+      - libhdf5-dev
+      - libhdf5-7
+      - libpng12-dev
+      - libfreetype6-dev
+      - python-dev
 
 python:
   - 2.7
@@ -14,7 +29,6 @@ env:
   - BARE_ENV=false
 
 before_install:
-  - apt-get update
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
     else
