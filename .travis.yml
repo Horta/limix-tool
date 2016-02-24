@@ -25,6 +25,8 @@ addons:
       - pkg-config
       - g++
       - libx11-dev
+      - liblapack3
+      - liblapack-dev
 
 python:
   - 2.7
