@@ -6,7 +6,9 @@ RUN chmod +x miniconda.sh
 RUN ./miniconda.sh -b
 ENV PATH /root/miniconda2/bin:$PATH
 RUN conda update --yes conda
-RUN conda install --yes python=2.7 numpy
+RUN conda update --yes pip
+RUN conda install --yes python=2.7 numpy scipy numba cython matplotlib h5py
 RUN mkdir /limix-util
 WORKDIR /limix-util
 ADD . /limix-util
+ENTRYPOINT ["/root/miniconda2/bin/python", "setup.py"]

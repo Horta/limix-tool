@@ -1,8 +1,16 @@
 from __future__ import division, print_function
+
+try:
+    import limix_build
+except ImportError:
+    import sys
+    from ez_build import use_limix_build
+    use_limix_build()
+    import limix_build
+
 import os
-if os.path.exists('MANIFEST'): os.remove('MANIFEST')
-import imp
 import sys
+from setuptools import setup
 
 if sys.version_info[0] >= 3:
     import builtins
@@ -14,52 +22,17 @@ builtins.__LIMIX_UTIL_SETUP__ = True
 PKG_NAME            = "limix_util"
 MAJOR               = 0
 MINOR               = 0
-MICRO               = 1
+MICRO               = 2
 ISRELEASED          = True
 VERSION             = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
-try:
-    imp.find_module('limix_build')
-except ImportError:
-    import subprocess
-    r = subprocess.call("pip install limix_build", shell=True)
-    if r != 0:
-        print('Fatal: could not install limix_build using pip. We need this' +
-              ' package before we can build.')
-        sys.exit(1)
-
-    try:
-        imp.find_module('limix_build')
-    except ImportError:
-        print('Fatal: could not import limix_build. Please, make sure it is ' +
-              'installed before attempting to build this package.')
-        sys.exit(1)
-
 from limix_build import write_version_py
-from limix_build import parse_setuppy_commands
-from limix_build import generate_cython
+from limix_build.cythonize import cythonize
 from limix_build import get_version_info
-from limix_build import get_version_filename
-from limix_build import avoid_requires
 
 def get_test_suite():
     from unittest import TestLoader
     return TestLoader().discover(PKG_NAME)
-
-def configuration(parent_package='', top_path=None):
-    from numpy.distutils.misc_util import Configuration
-
-    config = Configuration(None, parent_package, top_path)
-    config.set_options(ignore_setup_xxx_py=True,
-                       assume_default_configuration=True,
-                       delegate_options_to_subpackages=True,
-                       quiet=True)
-
-    config.add_subpackage(PKG_NAME)
-
-    config.get_version(get_version_filename(PKG_NAME)) # sets config.version
-
-    return config
 
 def setup_package():
     src_path = os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -69,15 +42,29 @@ def setup_package():
 
     write_version_py(PKG_NAME, VERSION, ISRELEASED)
 
-    install_requires = ['humanfriendly', 'progressbar', 'cython']
+    install_requires = ['limix_util', 'numba', 'humanfriendly', 'progressbar']
+    try:
+        import scipy
+    except ImportError:
+        install_requires.append('scipy')
+    try:
+        import h5py
+    except ImportError:
+        install_requires.append('h5py')
+    try:
+        import matplotlib
+    except ImportError:
+        install_requires.append('matplotlib')
 
-    avoid_requires('scipy', install_requires)
-    avoid_requires('h5py', install_requires)
-    avoid_requires('matplotlib', install_requires)
-    avoid_requires('numba', install_requires)
+    setup_requires = []
+    try:
+        import cython
+    except ImportError:
+        setup_requires.append('cython')
 
     metadata = dict(
         name=PKG_NAME,
+        version=get_version_info(PKG_NAME, VERSION, ISRELEASED)[0],
         maintainer="Limix Developers",
         maintainer_email = "horta@ebi.ac.uk",
         license="BSD",
@@ -85,24 +72,11 @@ def setup_package():
         test_suite='setup.get_test_suite',
         packages=[PKG_NAME],
         install_requires=install_requires,
-        setup_requires=[]
+        setup_requires=setup_requires,
+        zip_safe=False
     )
 
-    if "--force" in sys.argv:
-        run_build = True
-    else:
-        run_build = parse_setuppy_commands(PKG_NAME)
-
-    from setuptools import setup
-    if run_build:
-        from numpy.distutils.core import setup
-        cwd = os.path.abspath(os.path.dirname(__file__))
-        if not os.path.exists(os.path.join(cwd, 'PKG-INFO')):
-            generate_cython(PKG_NAME)
-
-        metadata['configuration'] = configuration
-    else:
-        metadata['version'] = get_version_info(PKG_NAME, VERSION, ISRELEASED)[0]
+    cythonize(PKG_NAME)
 
     try:
         setup(**metadata)
