@@ -24,6 +24,7 @@ addons:
       - hdf5-tools
       - pkg-config
       - g++
+      - libx11-dev
 
 python:
   - 2.7
