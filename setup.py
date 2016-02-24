@@ -42,7 +42,7 @@ def setup_package():
 
     write_version_py(PKG_NAME, VERSION, ISRELEASED)
 
-    install_requires = ['limix_util', 'numba', 'humanfriendly', 'progressbar']
+    install_requires = ['numba', 'humanfriendly', 'progressbar']
     try:
         import scipy
     except ImportError:

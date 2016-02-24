@@ -64,10 +64,42 @@ def _build_egg(egg, archive_filename, to_dir):
         # building an egg
         log.warn('Building a Limix_build egg in %s', to_dir)
         _python_cmd('setup.py', '-q', 'bdist_egg', '--dist-dir', to_dir)
+
     # returning the result
     log.warn(egg)
     if not os.path.exists(egg):
         raise IOError('Could not build the egg.')
+
+
+def _build_egg_requirements(egg, archive_filename, to_dir):
+    """Build Limix_build egg."""
+    with archive_context(archive_filename):
+        log.warn('Building Limix_build egg requirements in %s', to_dir)
+        shutil.copy(egg, './')
+        with ContextualZipFile(egg) as egg_file:
+            egg_file.extractall()
+        req_reader = """
+import subprocess
+import sys
+import importlib
+from pkg_resources import resource_stream, Requirement
+name = Requirement.parse("limix_build")
+data = resource_stream(name, "EGG-INFO/requires.txt").read()
+data = data.strip('\\n')
+reqs = data.split('\\n')
+for req in reqs:
+    try:
+        importlib.import_module(req)
+    except ImportError:
+        subprocess.call(['%(pip)s', 'install', '-U', req])
+        """ % {'pip': 'pip'}
+        open('tmp_install_reqs.py', 'w').write(req_reader)
+        subprocess.call([sys.executable, 'tmp_install_reqs.py'])
+
+    # returning the result
+    log.warn(egg)
+    if not os.path.exists(egg):
+        raise IOError('Could not build the egg requirements.')
 
 
 class ContextualZipFile(zipfile.ZipFile):
@@ -121,6 +153,7 @@ def _do_download(version, download_base, to_dir, download_delay):
         archive = download_limix_build(version, download_base,
                                       to_dir, download_delay)
         _build_egg(egg, archive, to_dir)
+        _build_egg_requirements(egg, archive, to_dir)
     sys.path.insert(0, egg)
 
     # Remove previously-imported pkg_resources if present (see

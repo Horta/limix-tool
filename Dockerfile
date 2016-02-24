@@ -7,7 +7,8 @@ RUN ./miniconda.sh -b
 ENV PATH /root/miniconda2/bin:$PATH
 RUN conda update --yes conda
 RUN conda update --yes pip
-RUN conda install --yes python=2.7 numpy scipy numba cython matplotlib h5py
+RUN conda install --yes python=2.7 numpy scipy numba matplotlib h5py
+RUN conda install --yes cython
 RUN mkdir /limix-util
 WORKDIR /limix-util
 ADD . /limix-util
