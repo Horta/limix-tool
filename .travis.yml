@@ -14,10 +14,6 @@ addons:
       - libatlas-dev
       - libatlas-base-dev
       - eatmydata
-      - libhdf5-serial-dev
-      - libhdf5-openmpi-dev
-      - libhdf5-lam-dev
-      - libhdf5-mpich-dev
       - libpng12-dev
       - libfreetype6-dev
       - python-dev
@@ -39,6 +35,8 @@ env:
   # - BARE_ENV=false
 
 before_install:
+  - file /usr/include/hdf5.h
+  - ls /usr/include/
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
     else
