@@ -47,7 +47,7 @@ before_install:
   - conda update -q conda
   - conda info -a
   - if [[ "$BARE_ENV" = true ]]; then
-      conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION;
+      conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy;
     else
       conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION cython numpy matplotlib scipy numba h5py;
     fi
