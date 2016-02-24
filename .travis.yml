@@ -15,6 +15,7 @@ addons:
       - libatlas-base-dev
       - eatmydata
       - libhdf5-serial-dev
+      - libhdf5-dev
       - libpng12-dev
       - libfreetype6-dev
       - python-dev
@@ -25,7 +26,6 @@ addons:
       - pkg-config
       - g++
       - libx11-dev
-      - liblapack3
       - liblapack-dev
 
 python:
