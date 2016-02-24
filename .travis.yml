@@ -46,8 +46,11 @@ before_install:
   - ./configure
   - make
   - make install
-  - file /usr/include/hdf5.h
   - popd
+  - export C_INCLUDE_PATH="$HOME/hdf5/hdf5-1.8.16/hdf5/include:$C_INCLUDE_PATH"
+  - export CPLUS_INCLUDE_PATH="$HOME/hdf5/hdf5-1.8.16/hdf5/include:$CPLUS_INCLUDE_PATH"
+  - export LIBRARY_PATH="$HOME/hdf5/hdf5-1.8.16/hdf5/include:$LIBRARY_PATH"
+  - export LD_LIBRARY_PATH="$HOME/hdf5/hdf5-1.8.16/hdf5/include:$LD_LIBRARY_PATH"
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
     else
