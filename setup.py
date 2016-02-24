@@ -76,9 +76,19 @@ def setup_package():
         zip_safe=False
     )
 
-    cwd = os.path.abspath(os.path.dirname(__file__))
-    if not os.path.exists(os.path.join(cwd, 'PKG-INFO')):
-        cythonize(PKG_NAME)
+    good_commands = ('develop', 'sdist', 'build', 'build_ext', 'build_py',
+                 'build_clib', 'build_scripts', 'bdist_wheel', 'bdist_rpm',
+                 'bdist_wininst', 'bdist_msi', 'bdist_mpkg', 'install')
+
+    run_build = False
+    for command in good_commands:
+        if command in sys.argv[1:]:
+            run_build = True
+
+    if run_build:
+        cwd = os.path.abspath(os.path.dirname(__file__))
+        if not os.path.exists(os.path.join(cwd, 'PKG-INFO')):
+            cythonize(PKG_NAME)
 
     try:
         setup(**metadata)
