@@ -1,6 +1,9 @@
 language: python
-sudo: required
+sudo: false
 dist: trusty
+cache:
+  - pip
+  - apt
 
 python:
   - 2.7
@@ -11,7 +14,7 @@ env:
   - BARE_ENV=false
 
 before_install:
-  - sudo apt-get update
+  - apt-get update
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
     else
@@ -26,7 +29,7 @@ before_install:
   - if [[ "$BARE_ENV" = true ]]; then
       conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION;
     else
-      conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy matplotlib scipy numba h5py;
+      conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION cython numpy matplotlib scipy numba h5py;
     fi
   - source activate test-environment
 
