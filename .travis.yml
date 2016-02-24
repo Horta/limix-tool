@@ -15,7 +15,9 @@ addons:
       - libatlas-base-dev
       - eatmydata
       - libhdf5-serial-dev
-      - libhdf5-dev
+      - libhdf5-openmpi-dev
+      - libhdf5-lam-dev
+      - libhdf5-mpich-dev
       - libpng12-dev
       - libfreetype6-dev
       - python-dev
