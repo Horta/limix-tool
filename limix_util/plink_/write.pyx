@@ -1,6 +1,6 @@
 from libc.stdlib cimport malloc, free
 from libc.stdio cimport FILE, sprintf
-from libc.string cimport strcmp, strlen
+from libc.string cimport strlen
 from cpython.string cimport PyString_AsString
 cimport cython
 
@@ -50,4 +50,18 @@ cpdef write_map(dst_filepath, long[:] chroms, list rss,
         fwrite(str_, 1, strlen(str_), f)
         fwrite('\n', 1, 1, f)
 
+    fclose(f)
+    free(c_rss)
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.initializedcheck(False)
+cpdef write_phen_int(dst_filepath, long[:] y):
+
+    cdef char str_[64]
+    cdef long i
+    f = fopen(dst_filepath, 'w')
+    for i in range(y.shape[0]):
+        sprintf(str_, "%d %d %d\n", i+1, i+1, y[i]);
+        fwrite(str_, 1, strlen(str_), f)
     fclose(f)
