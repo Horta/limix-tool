@@ -10,7 +10,11 @@ except ImportError:
 
 import os
 import sys
-from setuptools import setup
+from glob import glob
+from setuptools import setup, find_packages
+from setuptools.extension import Extension
+from Cython.Build import cythonize
+from Cython.Distutils import build_ext
 
 if sys.version_info[0] >= 3:
     import builtins
@@ -22,13 +26,30 @@ builtins.__LIMIX_UTIL_SETUP__ = True
 PKG_NAME            = "limix_util"
 MAJOR               = 0
 MINOR               = 0
-MICRO               = 2
-ISRELEASED          = True
+MICRO               = 3
+ISRELEASED          = False
 VERSION             = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
 from limix_build import write_version_py
-from limix_build.cythonize import cythonize
 from limix_build import get_version_info
+
+def write_extension():
+    curdir = os.path.abspath(os.path.dirname(__file__))
+
+    plink_folder = os.path.join(curdir, 'limix_util/plink_')
+
+
+    src = glob(os.path.join(plink_folder, '*.pyx'))
+    hdr = glob(os.path.join(plink_folder, '*.pxd'))
+
+    depends = src + hdr
+
+    include_dirs = [plink_folder]
+
+    ext = Extension('limix_util/plink_/write', src, include_dirs=include_dirs,
+                    depends=depends)
+
+    return ext
 
 def get_test_suite():
     from unittest import TestLoader
@@ -78,25 +99,13 @@ def setup_package():
         license="BSD",
         url='http://pmbio.github.io/limix/',
         test_suite='setup.get_test_suite',
-        packages=[PKG_NAME],
+        packages=find_packages(),
         install_requires=install_requires,
         setup_requires=setup_requires,
-        zip_safe=False
+        zip_safe=False,
+        ext_modules=cythonize([write_extension()]),
+        cmdclass=dict(build_ext=build_ext)
     )
-
-    good_commands = ('develop', 'sdist', 'build', 'build_ext', 'build_py',
-                 'build_clib', 'build_scripts', 'bdist_wheel', 'bdist_rpm',
-                 'bdist_wininst', 'bdist_msi', 'bdist_mpkg', 'install')
-
-    run_build = False
-    for command in good_commands:
-        if command in sys.argv[1:]:
-            run_build = True
-
-    if run_build:
-        cwd = os.path.abspath(os.path.dirname(__file__))
-        if not os.path.exists(os.path.join(cwd, 'PKG-INFO')):
-            cythonize(PKG_NAME)
 
     try:
         setup(**metadata)

@@ -2,8 +2,8 @@ import logging
 from numpy import asarray
 import numpy as np
 from numba import jit, uint8, int64, void
-from limix_util.plink_.write_map import write_map
-from limix_util.plink_.write_phen import write_phen_int
+from limix_util.plink_.write import write_map
+from limix_util.plink_.write import write_phen_int
 from limix_util import array_
 import subprocess
 
