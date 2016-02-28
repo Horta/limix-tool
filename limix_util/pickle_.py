@@ -1,16 +1,10 @@
-import importlib
 import gzip
 import cPickle
 import os
-import path_
-from progress import ProgressBar
-from misc import BeginEnd
+from report import BeginEnd, ProgressBar
 import object_
 from os.path import join
 from os.path import isdir
-import md5
-import collections
-import subprocess
 
 class PickleByName(object):
     def __init__(self):
@@ -23,14 +17,16 @@ class PickleByName(object):
         d = self.__dict__.copy()
         for attr_name in self._signature_only_attrs:
             o = getattr(self, attr_name)
+
             d[attr_name + '_fullname'] = object_.fullname(o)
             d[attr_name + '_init_dict'] = o.init_dict()
             del d[attr_name]
         return d
 
     def __setstate__(self, d):
-
-        for attr_name in self._signature_only_attrs:
+        import importlib
+        
+        for attr_name in d['_signature_only_attrs']:
             fn = d[attr_name + '_fullname']
             k = fn.rfind(".")
             module_name, class_name = fn[:k], fn[k+1:]
@@ -92,9 +88,6 @@ class SlotPickleMixin(object):
             result.extend(self.__dict__.keys())
         return result
 
-# with gzip.open('file.txt.gz', 'rb') as f:
-#     file_content = f.read()
-
 def pickle(obj, filepath):
     with gzip.open(filepath, 'wb', compresslevel=4) as f:
         cPickle.dump(obj, f, -1)
@@ -103,27 +96,10 @@ def unpickle(filepath):
     with gzip.open(filepath, 'rb', compresslevel=4) as f:
         return cPickle.load(f)
 
-# def unpickle(filepath):
-#     try:
-#         with gzip.open(filepath, 'rb', compresslevel=4) as f:
-#             return cPickle.load(f)
-#     except Exception as e:
-#         print e
-#         return _old_unpickle(filepath)
-
-
-# def _old_pickle(obj, filepath):
-#     import lz4
-#     data = cPickle.dumps(obj)
-#     with open(filepath, 'wb') as f:
-#         f.write(lz4.dumps(data))
-
-# def _old_unpickle(filepath):
-#     import lz4
-#     with open(filepath, 'rb') as f:
-#         return cPickle.loads(lz4.loads(f.read()))
-
 def _lastmodif_hash_folder(folder, exclude_files=None):
+    import md5
+    import subprocess
+
     if exclude_files is None:
         exclude_files = []
     out = subprocess.check_output('md5deep -r %s' % folder, shell=True)
@@ -136,23 +112,6 @@ def _lastmodif_hash_folder(folder, exclude_files=None):
         if os.path.basename(fp) not in exclude_files:
             m.update(hash_)
     return m.hexdigest()
-
-# def _lastmodif_hash(file_list):
-#     m = md5.new()
-#     for f in file_list:
-#         m.update(ctime(getmtime(f)))
-#     return m.hexdigest()
-
-# def _has_valid_cache(folder, file_list):
-#     fc = join(folder, '.h5merge_cache')
-#     if not os.path.exists(fc):
-#         return False
-#     with open(fc, 'r') as f:
-#         hprev = f.read()
-#
-#     hnext = _lastmodif_hash(file_list)
-#
-#     return hprev == hnext
 
 def _has_valid_cache_folder(folder):
     fc = join(folder, '.merge_cache')
@@ -182,6 +141,8 @@ def _get_file_list(folder):
     return file_list
 
 def _merge(file_list):
+    import collections
+
     pbar = ProgressBar(len(file_list))
     out = dict()
     for (i, fpath) in enumerate(file_list):
@@ -196,6 +157,8 @@ def _merge(file_list):
     return out
 
 def pickle_merge(folder, verbose=True):
+    import path_
+
     file_list = _get_file_list(folder)
 
     if len(file_list) == 0:
