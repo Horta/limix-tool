@@ -85,7 +85,7 @@ def setup_package():
 
     write_version()
 
-    install_requires = ['hcache', 'limix_math', 'numba']
+    install_requires = ['hcache', 'limix_math', 'limix_misc', 'numba']
     setup_requires = []
 
     metadata = dict(

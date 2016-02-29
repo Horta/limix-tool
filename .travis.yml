@@ -19,18 +19,6 @@ python:
   # - 3.5
 
 before_install:
-#  - if [ "$WITH_HDF5" = true ]; then
-#      mkdir "$HOME/hdf5" && pushd "$HOME/hdf5";
-#      wget http://www.hdfgroup.org/ftp/HDF5/current/src/hdf5-1.8.16.tar.gz;
-#      tar xzf hdf5-1.8.16.tar.gz;
-#      cd hdf5-1.8.16;
-#      ./configure && make && make install;
-#      popd;
-#      export C_INCLUDE_PATH="$HOME/hdf5/hdf5-1.8.16/hdf5/include:$C_INCLUDE_PATH";
-#      export CPLUS_INCLUDE_PATH="$HOME/hdf5/hdf5-1.8.16/hdf5/include:$CPLUS_INCLUDE_PATH";
-#      export LIBRARY_PATH="$HOME/hdf5/hdf5-1.8.16/hdf5/include:$LIBRARY_PATH";
-#      export LD_LIBRARY_PATH="$HOME/hdf5/hdf5-1.8.16/hdf5/include:$LD_LIBRARY_PATH";
-#    fi
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
     else
@@ -43,7 +31,7 @@ before_install:
   - conda update -q conda
   - conda info -a
   - conda install conda-build
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION cython numpy scipy numba h5py;
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION cython numpy scipy numba
   - source activate test-environment
 
 install: python setup.py install
