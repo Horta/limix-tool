@@ -1,11 +1,12 @@
+from __future__ import absolute_import
 import logging
+import subprocess
 from numpy import asarray
 import numpy as np
 from numba import jit, uint8, int64, void
-from limix_util.plink_.write import write_map
-from limix_util.plink_.write import write_phen_int
-from limix_util import array_
-import subprocess
+from .write import write_map
+from .write import write_phen_int
+from limix_misc import array_
 
 @jit(void(uint8[:], int64[:]), cache=True, nopython=True, nogil=True)
 def _create_ped_line(line, row):
