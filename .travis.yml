@@ -25,7 +25,7 @@ addons:
       - g++
       - libx11-dev
       - liblapack-dev
-      - gfortran
+      - gfortran
 
 python:
   - 2.7
