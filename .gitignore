@@ -1,3 +1,3 @@
-dist/
-build/
-limix_util/version.py
+/dist/
+/build/
+/limix_tool/version.py

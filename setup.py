@@ -6,7 +6,7 @@ from setuptools.extension import Extension
 from Cython.Build import cythonize
 from Cython.Distutils import build_ext
 
-PKG_NAME = 'limix_util'
+PKG_NAME = 'limix_tool'
 VERSION  = '0.1.3'
 
 try:
@@ -41,7 +41,7 @@ except ImportError:
 def plink_extension():
     curdir = os.path.abspath(os.path.dirname(__file__))
 
-    plink_folder = os.path.join(curdir, 'limix_util/plink_/')
+    plink_folder = os.path.join(curdir, 'limix_tool/plink_/')
 
     src = ['write.pyx']
     src = [os.path.join(plink_folder, s) for s in src]
@@ -51,7 +51,7 @@ def plink_extension():
 
     depends = src + hdr
 
-    ext = Extension('limix_util/plink_/write', src,
+    ext = Extension('limix_tool/plink_/write', src,
                     include_dirs=[np.get_include()], depends=depends)
 
     return ext

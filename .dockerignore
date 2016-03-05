@@ -1,4 +1,4 @@
 dist/
 build/
-limix_util/version.py
+limix_tool/version.py
 .git/
