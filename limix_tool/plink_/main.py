@@ -6,7 +6,7 @@ import numpy as np
 from numba import jit, uint8, int64, void
 from .write import write_map
 from .write import write_phen_int
-from limix_misc import array_
+from limix_util import array_
 
 @jit(void(uint8[:], int64[:]), cache=True, nopython=True, nogil=True)
 def _create_ped_line(line, row):

@@ -1,1 +1,1 @@
-# limix-util
+# limix-tool
