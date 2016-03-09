@@ -85,7 +85,8 @@ def create_bed(filepath, na_rep='-9', cod_type='binary'):
           "--noweb", '--missing-phenotype', na_rep, '--allow-no-sex']
     if cod_type == 'binary':
         cmd.append('--1')
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                         shell=True)
     out, err = p.communicate()
     logging.getLogger(__file__).debug(out)
     if len(err) > 0:

@@ -13,7 +13,6 @@ addons:
       - libc6
       - g++
       - gfortran
-      - plink
 
 python:
   - 2.7
