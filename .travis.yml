@@ -31,7 +31,7 @@ before_install:
   - conda update -q conda
   - conda info -a
   - conda install conda-build
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION cython numpy scipy numba
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION setuptools cython numpy scipy numba
   - source activate test-environment
 
 install: python setup.py install
