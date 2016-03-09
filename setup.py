@@ -7,9 +7,7 @@ from Cython.Build import cythonize
 from Cython.Distutils import build_ext
 
 PKG_NAME = 'limix_tool'
-VERSION  = '0.1.9'
-
-os.environ["MPLCONFIGDIR"] = "."
+VERSION  = '0.1.10'
 
 try:
     from distutils.command.bdist_conda import CondaDistribution
