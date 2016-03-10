@@ -1,3 +1,4 @@
+from __future__ import division
 import numpy as np
 
 def kinship_estimation(X, out=None, inplace=False):
@@ -39,13 +40,25 @@ def slow_kinship_estimation(X, out=None, inplace=False):
     X.dot(X.T, out=out)
     out /= out.diagonal().mean()
 
+# def gower_kinship_normalization(K):
+#     """
+#     Perform Gower normalizion on covariance matrix K
+#     the rescaled covariance matrix has sample variance of 1
+#     """
+#     n = K.shape[0]
+#     P = np.eye(n) - np.ones((n,n))/float(n)
+#     trPCP = np.trace(np.dot(P,np.dot(K,P)))
+#     r = (n-1) / trPCP
+#     return r * K
+
 def gower_kinship_normalization(K):
+    return gower_normalization(K)
+
+def gower_normalization(K):
     """
     Perform Gower normalizion on covariance matrix K
     the rescaled covariance matrix has sample variance of 1
     """
-    n = K.shape[0]
-    P = np.eye(n) - np.ones((n,n))/float(n)
-    trPCP = np.trace(np.dot(P,np.dot(K,P)))
-    r = (n-1) / trPCP
+    trPCP = K.trace() - K.mean(0).sum()
+    r = (K.shape[0]-1) / trPCP
     return r * K
