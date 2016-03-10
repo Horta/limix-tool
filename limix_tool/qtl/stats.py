@@ -1,4 +1,4 @@
-from scipy.stats import chi2
+import scipy.stats as st
 from numpy import partition
 from numpy import mean
 
@@ -10,12 +10,15 @@ def _get_median_terms(n):
         kth = [(n - 1) // 2]
     return kth
 
-def gcontrol(pv):
-    n = len(pv)
+def gcontrol(chi2):
+    """ Genomic control
+    """
+    n = len(chi2)
     kth = _get_median_terms(n)
-    c = chi2(df=1)
-    pv = partition(pv, kth)
-    x2obs = mean(c.ppf(1-pv[kth]))
+    c = st.chi2(df=1)
+    chi2 = partition(chi2, kth)
+    # x2obs = mean(c.ppf(1-chi2[kth]))
+    x2obs = mean(chi2[kth])
     x2exp = c.ppf(0.5)
     return x2obs/x2exp
 
