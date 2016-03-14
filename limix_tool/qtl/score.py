@@ -320,6 +320,22 @@ def getter(func):
     class ItemGetter(object):
         def __getitem__(self, i):
             return func(i)
+
+        def __lt__(self, other):
+            return func(np.s_[:]) < other
+
+        def __le__(self, other):
+            return func(np.s_[:]) <= other
+
+        def __gt__(self, other):
+            return func(np.s_[:]) > other
+
+        def __ge__(self, other):
+            return func(np.s_[:]) >= other
+
+        def __eq__(self, other):
+            return func(np.s_[:]) == other
+
     return ItemGetter()
 
 class ConfusionMatrix(object):
