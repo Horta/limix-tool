@@ -1,4 +1,5 @@
 from __future__ import division
+import logging
 import numpy as np
 from numpy import asarray
 from bisect import bisect_left
@@ -6,6 +7,7 @@ from numba import jit
 from hcache import Cached, cached
 from numpy import log10
 from stats import gcontrol
+from limix_util.array_ import iscrescent
 
 @jit(cache=True)
 def first_occurrence(arr, v):
@@ -56,21 +58,6 @@ def roc_curve(multi_score, method, max_fpr=0.05):
         assert tprs[i] >= tprs[max(i-1, 0)]
         tprs_stde[i] = np.std(tprs_)/np.sqrt(len(tprs_))
     return (fprs, tprs, tprs_stde)
-
-# class MultiScore(object):
-#     def __init__(self):
-#         self._scores = dict()
-#
-#     def add(self, name, score):
-#         self._scores[name] = score
-#
-#     def get_tprs(self, method, fpr=0.05, approach='rank'):
-#         assert approach == 'rank'
-#         scores = self._scores.values()
-#         tprs = np.empty(len(scores))
-#         for (i, s) in enumerate(scores):
-#             tprs[i] = s.rank_score(name=method, fpr=fpr)
-#         return tprs
 
 def _rank_confidence_band(nranks, alpha, max_n2ret=100):
     """calculate theoretical expectations for qqplot"""
@@ -137,136 +124,104 @@ class NullScore(object):
 
 
 
-class WindowScore(Cached):
-    def __init__(self, causals, pos, wsize=50000, verbose=True):
+class _WindowScore(Cached):
+    def __init__(self, causal, pos, wsize=50000):
+        """Provide a couple of scores based on the idea of windows around
+           genetic markers.
+
+           :param causal: Indices defining the causal markers.
+           :param pos: Base-pair position of each candidate marker, in crescent
+                       order.
+        """
         Cached.__init__(self)
+        self._logger = logging.getLogger()
         wsize = int(wsize)
-        # print 'Info: using window size %d.' % wsize
         self._pv = dict()
         self._sidx = dict()
+        pos = asarray(pos)
+        assert iscrescent(pos)
+        self._ncandidates = len(pos)
 
         total_size = pos[-1] - pos[0]
         if wsize > 0.1 * total_size:
             perc = wsize/total_size * 100
-            print('Warning: the window' +
-                  ' size is {perc}%'.format(perc=int(perc)) +
-                  ' of the total candidate region.')
+            self._logger.warn('The window size is %d%% of the total candidate' +
+                              ' region.', int(perc))
 
-        causals = asarray(causals, int)
+        causal = asarray(causal, int)
 
-        assert len(causals) == len(np.unique(causals))
-        causality = dict()
-        for c in causals:
+        assert len(causal) == len(np.unique(causal))
+        marker_within_window = set()
+        for c in causal:
             if wsize == 1:
                 right = left = pos[c]
             else:
                 left = _walk_left(pos, c, int(wsize/2))
                 right = _walk_right(pos, c, int(wsize/2))
             for i in range(left, right+1):
-                if i not in causality:
-                    causality[i] = []
-                causality[i].append(c)
+                marker_within_window.add(i)
 
-        self._causality = causality
+        self._P = len(marker_within_window)
+        self._N = len(pos) - self._P
 
-        self._P = len(causals)
-        self._N = len(pos) - len(causality)
+        self._marker_within_window = list(marker_within_window)
 
-        snp_within_window = asarray(self._causality.keys())
-        causal_snps = self._causality.values()
-        idx = np.argsort(snp_within_window)
-        snp_within_window = snp_within_window[idx]
-        causal_snps = [causal_snps[i] for i in idx]
-        self._responsible_causal_snps = asarray(causal_snps, int)
-        self._snp_within_window = snp_within_window
+        self._logger.info("Found %d positive and %d negative markers.",
+                          self._P, self._N)
 
-        if verbose:
-            print("Found %d positive and %d negative SNPs."
-                  % (self._P, self._N))
+    def confusion(self, pv):
+        pv = np.asarray(pv, float)
+        assert self._ncandidates == len(pv)
+        cm = ConfusionMatrix(self._P, self._N, self._marker_within_window,
+                             np.argsort(pv))
+        return cm
 
-    @property
-    def ncandidates(self):
-        k = self._pv.keys()[0]
-        return self._pv[k].shape[0]
+        # (fprs, tprs) = self.rank_scores(pv, fpr)
+        # diff = fprs - fpr
+        # if len(diff) == 1:
+        #     return diff[0]
+        #
+        # i = bisect_left(diff, 0)
+        # i = max(0, i-1)
+        #
+        # assert i < len(diff)
+        # if abs(diff[i]) <= abs(diff[i+1]):
+        #     return tprs[i]
+        # return tprs[i+1]
 
-    def add(self, name, pv):
-        if not np.all(np.isfinite(pv)):
-            print 'Warning: not all p-values from %s are finite.' % name
-            print 'Setting those p-values to 1.'
-            pv[np.logical_not(np.isfinite(pv))] = 1.0
+    # def hits(self, pv, fpr=0.05):
+    #     pv = np.asarray(pv, float)
+    #     assert self._ncandidates == len(pv)
+    #
+    #     sidx = np.argsort(pv)
+    #     i = bisect_left(pv[sidx], fpr)
+    #     i = max(0, i-1)
+    #     significants = sidx[:i]
+    #
+    #     mww = self._marker_within_window
+    #     fpos = np.searchsorted(mww, significants)
+    #
+    #     i = 0
+    #     n = len(fpos)
+    #     FP = 0
+    #     TP = 0
+    #     while i < n:
+    #         j = fpos[i]
+    #         if j == len(mww) or mww[j] != significants[i]:
+    #             FP += 1
+    #         else:
+    #             TP += 1
+    #         i += 1
+    #     return (TP + FP, TP)
 
-        self._pv[name] = np.asarray(pv, float)
-        self._sidx[name] = np.argsort(pv)
-        self.clear_cache('_compute_rank_scores')
-
-
-    @property
-    def names(self):
-        return self._pv.keys()
-
-    def rank_score(self, name, fpr=0.05):
-        (fprs, tprs) = self._compute_rank_scores(name, fpr)
-        diff = fprs - fpr
-        if len(diff) == 1:
-            return diff[0]
-
-        i = bisect_left(diff, 0)
-        i = max(0, i-1)
-
-        assert i < len(diff)
-        if abs(diff[i]) <= abs(diff[i+1]):
-            return tprs[i]
-        return tprs[i+1]
-
-    def accuracy_score(self, name, fpr=0.05):
-        (total, tp) = self.hits_score(name, fpr=fpr)
-        if total == 0:
-            return 0.
-        return tp / total
-
-    def hits_score(self, name, fpr=0.05):
-        pv = self._pv[name]
-        sidx = self._sidx[name]
-        i = bisect_left(pv[sidx], fpr)
-        i = max(0, i-1)
-        significants = sidx[:i]
-
-        sww = self._snp_within_window
-        fpos = np.searchsorted(sww, significants)
-
-        rcs = self._responsible_causal_snps
-        hit_causal_snp = set()
-        hcs = hit_causal_snp
-        hcs_size = len(hcs)
-
-        i = 0
-        n = len(fpos)
-        FP = 0
-        TP = 0
-        while i < n:
-            j = fpos[i]
-            if j == len(sww) or sww[j] != significants[i]:
-                FP += 1
-            else:
-                TP += 1
-                # for c in rcs[j]:
-                #     hcs.add(c)
-                #     if len(hcs) > hcs_size:
-                #         hcs_size = len(hcs)
-                #         TP += 1
-            i += 1
-        return (TP + FP, TP)
-
-    @cached
-    def _compute_rank_scores(self, name, upper_fpr=1.0):
+    def rank_scores(self, pv, upper_fpr=1.0):
         P = self._P
         N = self._N
-        sww = self._snp_within_window
-        rcs = self._responsible_causal_snps
+        mww = list(self._marker_within_window)
+        sidx = np.argsort(pv)
 
-        # (fpr, tpr) = _tf_pos_rate(P, N, sww, rcs, self._sidx[name])
-        (fpr, tpr) = _tf_pos_rate_limited(P, N, sww, rcs, self._sidx[name], upper_fpr)
-
+        (fpr, tpr) = _tf_pos_rate_limited(P, N, mww, sidx,
+                                          upper_fpr)
 
         # initially I was doing:
         # idx = np.argsort(fpr)
@@ -280,84 +235,165 @@ class WindowScore(Cached):
 
         return (fpr, tpr)
 
-@jit(cache=True)
-def _tf_pos_rate(P, N, snp_within_window, responsible_causal_snps,
-                 idx_pvsorted):
+class WindowScore(Cached):
+    def __init__(self, wsize=50000):
+        """Provide a couple of scores based on the idea of windows around
+           genetic markers.
+        """
+        Cached.__init__(self)
+        self._logger = logging.getLogger()
+        self._wsize = int(wsize)
+        self._chrom = dict()
 
-    rcc = responsible_causal_snps
-    hit_causal_snp = set()
-    hcs = hit_causal_snp
-    hcs_size = len(hcs)
+    def set_chrom(self, chromid, pos, causal):
+        """
+            :param causals: Indices defining the causal markers.
+            :param pos: Within-chromossome base-pair position of each candidate
+                        marker, in crescent order.
+        """
+        # self._chrom[chromid] = _WindowScore(causal, pos, self._wsize)
+        pos = np.asarray(pos, int)
+        assert iscrescent(pos)
+        self._chrom[chromid] = (np.asarray(causal, int), pos)
 
-    n = len(idx_pvsorted)
-    sww = snp_within_window
-    idx = idx_pvsorted
-    TP = np.empty(n+1)
-    FP = np.empty(n+1)
+    def _get_window_score(self, chromids):
+        pos = []
+        causal = []
 
-    fpos = np.searchsorted(sww, idx)
+        offset = 0
+        idx_offset = 0
+        for cid in sorted(chromids):
+            pos.append(offset + self._chrom[cid][1])
+            offset += pos[-1][-1] + int(self._wsize / 2 + 1)
 
-    TP[0] = 0
-    FP[0] = 0
-    for i in range(n):
-        FP[i+1] = FP[i]
-        TP[i+1] = TP[i]
+            if len(self._chrom[cid][0]) > 0:
+                causal.append(idx_offset + self._chrom[cid][0])
+                idx_offset += len(self._chrom[cid][1])
 
-        j = fpos[i]
-        if j == len(sww) or sww[j] != idx[i]:
-            FP[i+1] += 1
+        pos = np.concatenate(pos)
+        causal = np.concatenate(causal)
+        return _WindowScore(causal, pos, self._wsize)
+
+    def confusion(self, pv):
+        if isinstance(pv, dict):
+            ws = self._get_window_score(pv.keys())
+            pv = np.concatenate([pv[k] for k in sorted(pv.keys())])
         else:
-            for c in rcc[j]:
-                hcs.add(c)
-                if len(hcs) > hcs_size:
-                    hcs_size = len(hcs)
-                    TP[i+1] += 1
+            ws = self._get_window_score(self._chrom.keys())
+        return ws.confusion(pv)
 
-    tpr = TP/P
-    fpr = FP/N
-    return (fpr[1:], tpr[1:])
+# @jit(cache=True)
+# def _tf_pos_rate_limited(P, N, marker_within_window, idx_pvsorted, upper_fpr):
+#
+#     upper_fpr = min(2*upper_fpr, 1.0)
+#     n = len(idx_pvsorted)
+#     mww = marker_within_window
+#     idx = idx_pvsorted
+#     TP = np.empty(n+1)
+#     FP = np.empty(n+1)
+#
+#     fpos = np.searchsorted(mww, idx)
+#
+#     TP[0] = 0
+#     FP[0] = 0
+#     i = 0
+#     while i < n:
+#         FP[i+1] = FP[i]
+#         TP[i+1] = TP[i]
+#
+#         j = fpos[i]
+#         if j == len(mww) or mww[j] != idx[i]:
+#             FP[i+1] += 1
+#             if FP[i+1]/N > upper_fpr:
+#                 i += 1
+#                 break
+#         else:
+#             TP[i+1] += 1
+#         i += 1
+#
+#     tpr = TP[1:i]/P
+#     fpr = FP[1:i]/N
+#     return (fpr, tpr)
+
+class ConfusionMatrix(object):
+    def __init__(self, P, N, true_set, idx_rank):
+        self._TP = np.empty(P+N+1, dtype=int)
+        self._FP = np.empty(P+N+1, dtype=int)
+        assert len(idx_rank) == P + N
+        ins_pos = np.searchsorted(true_set, idx_rank)
+        _confusion_matrix_tp_fp(P + N, ins_pos, true_set, idx_rank,
+                          self._TP, self._FP)
+        self._N = N
+        self._P = P
+
+    def TP(self, i):
+        return self._TP[i]
+
+    def FP(self, i):
+        return self._FP[i]
+
+    def TN(self, i):
+        return self._N - self.FP(i)
+
+    def FN(self, i):
+        return self._P - self.TP(i)
+
+    def sensitivity(self, i):
+        """ Sensitivity (also known as true positive rate.)
+        """
+        return self.TP(i) / self._P
+
+    def specifity(self, i):
+        """ Specifity (also known as true negative rate.)
+        """
+        return self.TN(i) / self._N
+
+    def precision(self, i):
+        return self.TP(i) / (self.TP(i) + self.FP(i))
+
+    def npv(self, i):
+        """ Negative predictive value.
+        """
+        return self.TN(i) / (self.TN(i) + self.FN(i))
+
+    def fallout(self, i):
+        """ Fall-out (also known as false positive rate.)
+        """
+        return 1 - self.specifity(i)
+
+    def fnr(self, i):
+        """ False negative rate.
+        """
+        return 1 - self.sensitivity(i)
+
+    def fdr(self, i):
+        """ False discovery rate.
+        """
+        return 1 - self.precision(i)
+
+    def accuracy(self, i):
+        """ Accuracy.
+        """
+        return (self.TP(i) + self.TN(i)) / (self._N + self._P)
+
+    def f1score(self, i):
+        """ F1 score (harmonic mean of precision and sensitivity).
+        """
+        return 2 * self.TP(i) / (2*self.TP(i) + self.FP(i) + self.FN(i))
 
 
 @jit(cache=True)
-def _tf_pos_rate_limited(P, N, snp_within_window, responsible_causal_snps,
-                 idx_pvsorted, upper_fpr):
-
-    upper_fpr = min(2*upper_fpr, 1.0)
-    rcc = responsible_causal_snps
-    hit_causal_snp = set()
-    hcs = hit_causal_snp
-    hcs_size = len(hcs)
-
-    n = len(idx_pvsorted)
-    sww = snp_within_window
-    idx = idx_pvsorted
-    TP = np.empty(n+1)
-    FP = np.empty(n+1)
-
-    fpos = np.searchsorted(sww, idx)
-
+def _confusion_matrix_tp_fp(n, ins_pos, true_set, idx_rank, TP, FP):
     TP[0] = 0
     FP[0] = 0
     i = 0
     while i < n:
-    # for i in range(n):
         FP[i+1] = FP[i]
         TP[i+1] = TP[i]
 
-        j = fpos[i]
-        if j == len(sww) or sww[j] != idx[i]:
+        j = ins_pos[i]
+        if j == len(true_set) or true_set[j] != idx_rank[i]:
             FP[i+1] += 1
-            if FP[i+1]/N > upper_fpr:
-                i += 1
-                break
         else:
-            for c in rcc[j]:
-                hcs.add(c)
-                if len(hcs) > hcs_size:
-                    hcs_size = len(hcs)
-                    TP[i+1] += 1
+            TP[i+1] += 1
         i += 1
-
-    tpr = TP[1:i]/P
-    fpr = FP[1:i]/N
-    return (fpr, tpr)
