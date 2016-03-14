@@ -123,7 +123,6 @@ class NullScore(object):
         return (bottom, mean, top)
 
 
-
 class _WindowScore(Cached):
     def __init__(self, causal, pos, wsize=50000):
         """Provide a couple of scores based on the idea of windows around
@@ -176,65 +175,6 @@ class _WindowScore(Cached):
                              np.argsort(pv))
         return cm
 
-        # (fprs, tprs) = self.rank_scores(pv, fpr)
-        # diff = fprs - fpr
-        # if len(diff) == 1:
-        #     return diff[0]
-        #
-        # i = bisect_left(diff, 0)
-        # i = max(0, i-1)
-        #
-        # assert i < len(diff)
-        # if abs(diff[i]) <= abs(diff[i+1]):
-        #     return tprs[i]
-        # return tprs[i+1]
-
-    # def hits(self, pv, fpr=0.05):
-    #     pv = np.asarray(pv, float)
-    #     assert self._ncandidates == len(pv)
-    #
-    #     sidx = np.argsort(pv)
-    #     i = bisect_left(pv[sidx], fpr)
-    #     i = max(0, i-1)
-    #     significants = sidx[:i]
-    #
-    #     mww = self._marker_within_window
-    #     fpos = np.searchsorted(mww, significants)
-    #
-    #     i = 0
-    #     n = len(fpos)
-    #     FP = 0
-    #     TP = 0
-    #     while i < n:
-    #         j = fpos[i]
-    #         if j == len(mww) or mww[j] != significants[i]:
-    #             FP += 1
-    #         else:
-    #             TP += 1
-    #         i += 1
-    #     return (TP + FP, TP)
-
-    def rank_scores(self, pv, upper_fpr=1.0):
-        P = self._P
-        N = self._N
-        mww = list(self._marker_within_window)
-        sidx = np.argsort(pv)
-
-        (fpr, tpr) = _tf_pos_rate_limited(P, N, mww, sidx,
-                                          upper_fpr)
-
-        # initially I was doing:
-        # idx = np.argsort(fpr)
-        # (asarray(fpr)[idx], asarray(tpr)[idx])
-        # the problem is that fpr might have repeat
-        # values which means that tpr might not end up
-        # in ascending order afterall...
-
-        fpr = np.sort(fpr)
-        tpr = np.sort(tpr)
-
-        return (fpr, tpr)
-
 class WindowScore(Cached):
     def __init__(self, wsize=50000):
         """Provide a couple of scores based on the idea of windows around
@@ -281,40 +221,6 @@ class WindowScore(Cached):
         else:
             ws = self._get_window_score(self._chrom.keys())
         return ws.confusion(pv)
-
-# @jit(cache=True)
-# def _tf_pos_rate_limited(P, N, marker_within_window, idx_pvsorted, upper_fpr):
-#
-#     upper_fpr = min(2*upper_fpr, 1.0)
-#     n = len(idx_pvsorted)
-#     mww = marker_within_window
-#     idx = idx_pvsorted
-#     TP = np.empty(n+1)
-#     FP = np.empty(n+1)
-#
-#     fpos = np.searchsorted(mww, idx)
-#
-#     TP[0] = 0
-#     FP[0] = 0
-#     i = 0
-#     while i < n:
-#         FP[i+1] = FP[i]
-#         TP[i+1] = TP[i]
-#
-#         j = fpos[i]
-#         if j == len(mww) or mww[j] != idx[i]:
-#             FP[i+1] += 1
-#             if FP[i+1]/N > upper_fpr:
-#                 i += 1
-#                 break
-#         else:
-#             TP[i+1] += 1
-#         i += 1
-#
-#     tpr = TP[1:i]/P
-#     fpr = FP[1:i]/N
-#     return (fpr, tpr)
-
 
 def getter(func):
     class ItemGetter(object):
