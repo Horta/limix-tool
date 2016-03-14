@@ -315,74 +315,100 @@ class WindowScore(Cached):
 #     fpr = FP[1:i]/N
 #     return (fpr, tpr)
 
+
+def getter(func):
+    class ItemGetter(object):
+        def __getitem__(self, i):
+            return func(i)
+    return ItemGetter()
+
 class ConfusionMatrix(object):
     def __init__(self, P, N, true_set, idx_rank):
         self._TP = np.empty(P+N+1, dtype=int)
         self._FP = np.empty(P+N+1, dtype=int)
         assert len(idx_rank) == P + N
+
+        true_set = np.asarray(true_set, int)
+        true_set.sort()
+
+        idx_rank = np.asarray(idx_rank, int)
+        idx_rank.sort()
+
         ins_pos = np.searchsorted(true_set, idx_rank)
         _confusion_matrix_tp_fp(P + N, ins_pos, true_set, idx_rank,
                           self._TP, self._FP)
         self._N = N
         self._P = P
 
-    def TP(self, i):
-        return self._TP[i]
+    @property
+    def TP(self):
+        return getter(lambda i: self._TP[i])
 
-    def FP(self, i):
-        return self._FP[i]
+    @property
+    def FP(self):
+        return getter(lambda i: self._FP[i])
 
-    def TN(self, i):
-        return self._N - self.FP(i)
+    @property
+    def TN(self):
+        return getter(lambda i: self._N - self.FP[i])
 
-    def FN(self, i):
-        return self._P - self.TP(i)
+    @property
+    def FN(self):
+        return getter(lambda i: self._P - self.TP[i])
 
-    def sensitivity(self, i):
+    @property
+    def sensitivity(self):
         """ Sensitivity (also known as true positive rate.)
         """
-        return self.TP(i) / self._P
+        return getter(lambda i: self.TP[i] / self._P)
 
-    def specifity(self, i):
+    @property
+    def specifity(self):
         """ Specifity (also known as true negative rate.)
         """
-        return self.TN(i) / self._N
+        return getter(lambda i: self.TN[i] / self._N)
 
-    def precision(self, i):
-        return self.TP(i) / (self.TP(i) + self.FP(i))
+    @property
+    def precision(self):
+        return getter(lambda i: self.TP[i] / (self.TP[i] + self.FP[i]))
 
-    def npv(self, i):
+    @property
+    def npv(self):
         """ Negative predictive value.
         """
-        return self.TN(i) / (self.TN(i) + self.FN(i))
+        return getter(lambda i: self.TN[i] / (self.TN[i] + self.FN[i]))
 
-    def fallout(self, i):
+    @property
+    def fallout(self):
         """ Fall-out (also known as false positive rate.)
         """
-        return 1 - self.specifity(i)
+        return getter(lambda i: 1 - self.specifity[i])
 
-    def fnr(self, i):
+    @property
+    def fnr(self):
         """ False negative rate.
         """
-        return 1 - self.sensitivity(i)
+        return getter(lambda i: 1 - self.sensitivity[i])
 
-    def fdr(self, i):
+    @property
+    def fdr(self):
         """ False discovery rate.
         """
-        return 1 - self.precision(i)
+        return getter(lambda i: 1 - self.precision[i])
 
-    def accuracy(self, i):
+    @property
+    def accuracy(self):
         """ Accuracy.
         """
-        return (self.TP(i) + self.TN(i)) / (self._N + self._P)
+        return getter(lambda i: (self.TP[i] + self.TN[i]) / (self._N + self._P))
 
-    def f1score(self, i):
+    @property
+    def f1score(self):
         """ F1 score (harmonic mean of precision and sensitivity).
         """
-        return 2 * self.TP(i) / (2*self.TP(i) + self.FP(i) + self.FN(i))
+        return getter(lambda i: 2 * self.TP[i] / (2*self.TP[i] + self.FP[i] + self.FN[i]))
 
 
-@jit(cache=True)
 def _confusion_matrix_tp_fp(n, ins_pos, true_set, idx_rank, TP, FP):
     TP[0] = 0
     FP[0] = 0
