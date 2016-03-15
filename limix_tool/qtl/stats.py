@@ -1,8 +1,11 @@
 from __future__ import division
+from numba import jit
+from numba import float64, int64
+from numba import guvectorize
 import scipy.stats as st
 from scipy.misc import logsumexp
 import numpy as np
-from numpy import log
+from math import log
 from numpy import partition
 from numpy import mean
 from limix_util.scalar import isint
@@ -35,7 +38,20 @@ def qvalues(pv):
     qvalue = importr('qvalue')
     print qvalue.qvalue(pv)
 
-def hwe_test(n_ab, n_a, n_b):
+@jit(nopython=True, nogil=True, cache=True)
+def _ln_upper_weight(n_ab, n_a, n_b):
+    n_aa = int((n_a - n_ab)/2)
+    n_bb = int((n_b - n_ab)/2)
+    return log(4) + log(n_aa) + log(n_bb) - log(n_ab + 2) - log(n_ab + 1)
+
+@jit(nopython=True, nogil=True, cache=True)
+def _ln_lower_weight(n_ab, n_a, n_b):
+    n_aa = int((n_a - n_ab)/2)
+    n_bb = int((n_b - n_ab)/2)
+    return log(n_ab) + log(n_ab - 1) - log(4) - log(n_aa + 1) - log(n_bb + 1)
+
+@jit(cache=True)
+def hwe_stat(n_ab, n_a, n_b):
     """ Exact test for Hardy-Weinberg Equilibrium for biallelic genotype.
 
     This statistics is described in "A Note on Exact Tests of
@@ -56,17 +72,6 @@ def hwe_test(n_ab, n_a, n_b):
     assert n_a <= n_b
     assert n_a >= n_ab
     assert (n_a + n_b) % 2 == 0
-    # N = n_ab + int((n_a - n_ab)/2) + int((n_b - n_ab)/2)
-
-    def ln_upper_weight(n_ab):
-        n_aa = int((n_a - n_ab)/2)
-        n_bb = int((n_b - n_ab)/2)
-        return log(4) + log(n_aa) + log(n_bb) - log(n_ab + 2) - log(n_ab + 1)
-
-    def ln_lower_weight(n_ab):
-        n_aa = int((n_a - n_ab)/2)
-        n_bb = int((n_b - n_ab)/2)
-        return log(n_ab) + log(n_ab - 1) - log(4) - log(n_aa + 1) - log(n_bb + 1)
 
     lnP = np.empty(int(n_a / 2) + 1)
     # this can be an arbitrary as long as I normalize the probabilities
@@ -75,16 +80,31 @@ def hwe_test(n_ab, n_a, n_b):
     n_ab_i = n_ab
     while n_ab_i >= 2:
         i = int(n_ab_i / 2)
-        lnP[i-1] = lnP[i] + ln_lower_weight(n_ab_i)
+        lnP[i-1] = lnP[i] + _ln_lower_weight(n_ab_i, n_a, n_b)
         n_ab_i -= 2
 
     n_ab_i = n_ab
     while n_ab_i <= n_a - 2:
         i = int(n_ab_i / 2)
-        lnP[i+1] = lnP[i] + ln_upper_weight(n_ab_i)
+        lnP[i+1] = lnP[i] + _ln_upper_weight(n_ab_i, n_a, n_b)
         n_ab_i += 2
 
     lnPab = lnP[int(n_ab / 2)]
     ok = lnPab >= lnP
     lnC = logsumexp(lnP)
     return np.exp(logsumexp(lnP[ok]) - lnC)
+
+@guvectorize([(float64[:], float64[:]), (int64[:], float64[:])], '(n)->()')
+def hwe_test(x, res):
+    x = np.asarray(x)
+    u = np.unique(x)
+    assert len(set(u).union([0, 1, 2])) <= 3
+    N = 2 * x.shape[0]
+    n_b = int(x.sum())
+    n_a = int(N - n_b)
+    n_ab = int(sum(x == 1))
+
+    if n_a > n_b:
+        n_a, n_b = n_b, n_a
+
+    res[0] = hwe_stat(n_ab, n_a, n_b)
