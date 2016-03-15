@@ -3,12 +3,12 @@ from numba import jit
 from numba import float64, int64
 from numba import guvectorize
 import scipy.stats as st
-from scipy.misc import logsumexp
+# from scipy.misc import logsumexp
 import numpy as np
-from math import log
+from math import log, exp
 from numpy import partition
 from numpy import mean
-from limix_util.scalar import isint
+from limix_math.special import logsumexp
 
 def _get_median_terms(n):
     if n % 2 == 0:
@@ -50,7 +50,7 @@ def _ln_lower_weight(n_ab, n_a, n_b):
     n_bb = int((n_b - n_ab)/2)
     return log(n_ab) + log(n_ab - 1) - log(4) - log(n_aa + 1) - log(n_bb + 1)
 
-@jit(cache=True)
+@jit((int64, int64, int64), cache=True, nopython=True, nogil=True)
 def hwe_stat(n_ab, n_a, n_b):
     """ Exact test for Hardy-Weinberg Equilibrium for biallelic genotype.
 
@@ -63,11 +63,8 @@ def hwe_stat(n_ab, n_a, n_b):
 
     Note that n_aa = (n_a - n_ab)/2 and n_bb = (n_b - n_ab)/2.
     """
-    assert isint(n_a)
     n_a = int(n_a)
-    assert isint(n_b)
     n_b = int(n_b)
-    assert isint(n_ab)
     n_ab = int(n_ab)
     assert n_a <= n_b
     assert n_a >= n_ab
@@ -92,17 +89,15 @@ def hwe_stat(n_ab, n_a, n_b):
     lnPab = lnP[int(n_ab / 2)]
     ok = lnPab >= lnP
     lnC = logsumexp(lnP)
-    return np.exp(logsumexp(lnP[ok]) - lnC)
+    return exp(logsumexp(lnP[ok]) - lnC)
 
 @guvectorize([(float64[:], float64[:]), (int64[:], float64[:])], '(n)->()')
 def hwe_test(x, res):
-    x = np.asarray(x)
-    u = np.unique(x)
-    assert len(set(u).union([0, 1, 2])) <= 3
+    x = np.asarray(x, int)
     N = 2 * x.shape[0]
     n_b = int(x.sum())
     n_a = int(N - n_b)
-    n_ab = int(sum(x == 1))
+    n_ab = int(np.sum(x == 1))
 
     if n_a > n_b:
         n_a, n_b = n_b, n_a
