@@ -4,9 +4,13 @@ import subprocess
 from numpy import asarray
 import numpy as np
 from numba import jit, uint8, int64, void
-from .write import write_map
-from .write import write_phen_int
+from . import write
 from limix_util import array_
+from limix_util.path_ import bin_exists
+
+def check_plink_exists():
+    if not bin_exists('plink'):
+        raise EnvironmentError('Could not find plink.')
 
 @jit(void(uint8[:], int64[:]), cache=True, nopython=True, nogil=True)
 def _create_ped_line(line, row):
@@ -70,23 +74,23 @@ def create_map(dst_filepath, chroms, rss=None, gds=None, bps=None):
     if bps is None:
         bps = arr
 
-    write_map(dst_filepath, chroms, rss, gds, bps)
+    write.write_map(dst_filepath, chroms, rss, gds, bps)
 
 def create_phen(filepath, y):
     y = asarray(y)
     if array_.isint_alike(y):
-        write_phen_int(filepath, asarray(y, int))
+        write.write_phen_int(filepath, asarray(y, int))
     else:
         raise NotImplementedError('create_phen is not suitable for non-int'+
                                   ' phenotype yet.')
 
 def create_bed(filepath, na_rep='-9', cod_type='binary'):
+    check_plink_exists()
     cmd = ["plink", "--file", filepath, "--out", filepath, "--make-bed",
           "--noweb", '--missing-phenotype', na_rep, '--allow-no-sex']
     if cod_type == 'binary':
         cmd.append('--1')
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                         shell=True)
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
     logging.getLogger(__file__).debug(out)
     if len(err) > 0:

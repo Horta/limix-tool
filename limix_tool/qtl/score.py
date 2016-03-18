@@ -2,7 +2,6 @@ from __future__ import division
 import logging
 import numpy as np
 from numpy import asarray
-from bisect import bisect_left
 from numba import jit
 from hcache import Cached, cached
 from numpy import log10
