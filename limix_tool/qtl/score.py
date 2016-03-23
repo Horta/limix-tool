@@ -250,7 +250,6 @@ class ConfusionMatrix(object):
         true_set.sort()
 
         idx_rank = np.asarray(idx_rank, int)
-        idx_rank.sort()
 
         ins_pos = np.searchsorted(true_set, idx_rank)
         _confusion_matrix_tp_fp(P + N, ins_pos, true_set, idx_rank,
