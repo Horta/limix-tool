@@ -3,7 +3,6 @@ import logging
 import numpy as np
 from numpy import asarray
 from numba import jit
-from hcache import Cached, cached
 from numpy import log10
 from stats import gcontrol
 from limix_util.array_ import iscrescent
@@ -122,7 +121,7 @@ class NullScore(object):
         return (bottom, mean, top)
 
 
-class _WindowScore(Cached):
+class _WindowScore(object):
     def __init__(self, causal, pos, wsize=50000):
         """Provide a couple of scores based on the idea of windows around
            genetic markers.
@@ -131,7 +130,6 @@ class _WindowScore(Cached):
            :param pos: Base-pair position of each candidate marker, in crescent
                        order.
         """
-        Cached.__init__(self)
         self._logger = logging.getLogger()
         wsize = int(wsize)
         self._pv = dict()
@@ -174,12 +172,11 @@ class _WindowScore(Cached):
                              np.argsort(pv))
         return cm
 
-class WindowScore(Cached):
+class WindowScore(object):
     def __init__(self, wsize=50000):
         """Provide a couple of scores based on the idea of windows around
            genetic markers.
         """
-        Cached.__init__(self)
         self._logger = logging.getLogger()
         self._wsize = int(wsize)
         self._chrom = dict()
@@ -284,6 +281,14 @@ class ConfusionMatrix(object):
         return getter(lambda i: self.TP[i] / self._P)
 
     @property
+    def tpr(self):
+        return self.sensitivity
+
+    @property
+    def recall(self):
+        return self.sensitivity
+
+    @property
     def specifity(self):
         """ Specifity (also known as true negative rate.)
         """
@@ -304,6 +309,10 @@ class ConfusionMatrix(object):
         """ Fall-out (also known as false positive rate.)
         """
         return getter(lambda i: 1 - self.specifity[i])
+
+    @property
+    def fpr(self):
+        return self.fallout
 
     @property
     def fnr(self):
