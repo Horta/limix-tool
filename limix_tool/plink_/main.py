@@ -14,7 +14,7 @@ def check_plink_exists():
 
 @jit(void(uint8[:], int64[:]), cache=True, nopython=True, nogil=True)
 def _create_ped_line(line, row):
-    for i in xrange(row.shape[0]):
+    for i in range(row.shape[0]):
         if row[i] == 0:
             line[4*i] = 65 # A
             line[4*i+1] = 32 # ' '
@@ -34,7 +34,7 @@ def _create_ped(dst_filepath, y, G):
     line[:-1] = ord(' ')
     line[-1] = ord('\n')
     with open(dst_filepath, 'w') as f:
-        for j in xrange(n):
+        for j in range(n):
             f.write('%d %d 1 1 0 %d ' % (j+1, j+1, y[j]))
             _create_ped_line(line, asarray(G[j,:], int))
             f.write(line)
