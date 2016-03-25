@@ -36,7 +36,7 @@ def qvalues(pv):
     import rpy2.robjects.numpy2ri
     rpy2.robjects.numpy2ri.activate()
     qvalue = importr('qvalue')
-    print qvalue.qvalue(pv)
+    print(qvalue.qvalue(pv))
 
 @jit(nopython=True, nogil=True, cache=True)
 def _ln_upper_weight(n_ab, n_a, n_b):

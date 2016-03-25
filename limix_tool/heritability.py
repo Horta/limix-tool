@@ -77,7 +77,7 @@ if __name__ == '__main__':
     from gwarped_exp.method.leap import bernoulli_h2
     import ipdb; ipdb.set_trace()
     bernoulli_h2(np.asarray(y, float), np.ones(2000), K, 100, 0.5)
-    print hh2
+    print(hh2)
     # ascertainment = 0.5
     # prevalence = 0.1
     # h2 = h2_observed_space_correct(hh2, prevalence, ascertainment)
