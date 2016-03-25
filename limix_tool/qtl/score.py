@@ -4,7 +4,7 @@ import numpy as np
 from numpy import asarray
 from numba import jit
 from numpy import log10
-from stats import gcontrol
+from .stats import gcontrol
 from limix_util.array_ import iscrescent
 
 @jit(cache=True)

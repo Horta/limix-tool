@@ -3,7 +3,6 @@ from numba import jit
 from numba import float64, int64
 from numba import guvectorize
 import scipy.stats as st
-# from scipy.misc import logsumexp
 import numpy as np
 from math import log, exp
 from numpy import partition
