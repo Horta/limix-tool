@@ -37,6 +37,13 @@ except ImportError:
           " Please, install it so I can proceed.")
     sys.exit(1)
 
+try:
+    import numba
+except ImportError:
+    print("Error: numba package couldn't be found."+
+          " Please, install it so I can proceed.")
+    sys.exit(1)
+
 
 def plink_extension():
     curdir = os.path.abspath(os.path.dirname(__file__))
@@ -85,7 +92,7 @@ def setup_package():
 
     write_version()
 
-    install_requires = ['hcache', 'limix_math', 'limix_util', 'numba']
+    install_requires = ['hcache', 'limix_math', 'limix_util']
     setup_requires = []
 
     metadata = dict(
