@@ -1,4 +1,3 @@
 include README.md
 include LICENSE.txt
-include limix_tool/plink_/write.pxd
-include limix_tool/plink_/write.pyx
+recursive-include limix_tool *.pyx *.pxd *.c
