@@ -12,7 +12,7 @@ def check_plink_exists():
     if not bin_exists('plink'):
         raise EnvironmentError('Could not find plink.')
 
-@jit(void(uint8[:], int64[:]), cache=True, nopython=True, nogil=True)
+@jit(void(uint8[:], int64[:]), nopython=True, nogil=True)
 def _create_ped_line(line, row):
     for i in range(row.shape[0]):
         if row[i] == 0:

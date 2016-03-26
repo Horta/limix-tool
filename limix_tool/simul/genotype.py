@@ -12,7 +12,7 @@ def cross_parents(X, parents, block_size=1000):
     return child
 
 @numba.jit('void(float64[:,:], int64[:], float64[:], int64)', nopython=True,
-           nogil=True, cache=True)
+           nogil=True)
 def cross_parents_inplace(X, parents, child, block_size=1000):
     i = 0
     j = 0

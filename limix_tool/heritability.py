@@ -41,7 +41,7 @@ def correct_liability_h2(h2, prevalence, ascertainment):
     part2 = (ascertainment * (1 - ascertainment))
     return h2 * (part1 / part2)
 
-@jit(cache=True)
+@jit
 def _haseman_elston_regression(y, K):
     r1 = 0.
     r2 = 0.

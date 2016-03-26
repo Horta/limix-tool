@@ -7,14 +7,14 @@ from numpy import log10
 from .stats import gcontrol
 from limix_util.array_ import iscrescent
 
-@jit(cache=True)
+@jit
 def first_occurrence(arr, v):
     for i in range(arr.shape[0]):
         if arr[i] == v:
             return i
     return None
 
-@jit(cache=True)
+@jit
 def _walk_left(pos, c, dist):
     assert dist > 0
     step = 0
@@ -29,7 +29,7 @@ def _walk_left(pos, c, dist):
     assert i <= c
     return i
 
-@jit(cache=True)
+@jit
 def _walk_right(pos, c, dist):
     assert dist > 0
     step = 0

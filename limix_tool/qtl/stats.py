@@ -37,19 +37,19 @@ def qvalues(pv):
     qvalue = importr('qvalue')
     print(qvalue.qvalue(pv))
 
-@jit(nopython=True, nogil=True, cache=True)
+@jit(nopython=True, nogil=True)
 def _ln_upper_weight(n_ab, n_a, n_b):
     n_aa = int((n_a - n_ab)/2)
     n_bb = int((n_b - n_ab)/2)
     return log(4) + log(n_aa) + log(n_bb) - log(n_ab + 2) - log(n_ab + 1)
 
-@jit(nopython=True, nogil=True, cache=True)
+@jit(nopython=True, nogil=True)
 def _ln_lower_weight(n_ab, n_a, n_b):
     n_aa = int((n_a - n_ab)/2)
     n_bb = int((n_b - n_ab)/2)
     return log(n_ab) + log(n_ab - 1) - log(4) - log(n_aa + 1) - log(n_bb + 1)
 
-@jit((int64, int64, int64), cache=True, nopython=True, nogil=True)
+@jit((int64, int64, int64), nopython=True, nogil=True)
 def hwe_stat(n_ab, n_a, n_b):
     """ Exact test for Hardy-Weinberg Equilibrium for biallelic genotype.
 
