@@ -30,7 +30,7 @@ before_install:
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
   - conda info -a
-  - conda install conda-build
+  - conda install -q conda-build
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION setuptools cython numpy scipy numba
   - source activate test-environment
 
