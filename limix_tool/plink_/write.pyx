@@ -2,7 +2,7 @@ from libc.stdlib cimport malloc, free
 from libc.stdio cimport FILE, sprintf
 from libc.string cimport strlen
 # from cpython.string cimport PyString_AsString
-from cpython.unicode cimport PyUnicode_AsUTF8String
+from cpython.unicode cimport PyUnicode_AsASCIIString, PyUnicode_FromObject
 from cpython.bytes cimport PyBytes_AsString
 from cpython.object cimport PyObject
 # from cpython.ref cimport Py_DECREF
@@ -44,7 +44,7 @@ cpdef write_map(dst_filepath, long[:] chroms, list rss,
     f = fopen(dst_filepath, 'w')
     for i in range(chroms.shape[0]):
 
-        p = PyUnicode_AsUTF8String(rss[i])
+        p = PyUnicode_AsASCIIString(PyUnicode_FromObject(rss[i]))
         c = PyBytes_AsString(p)
 
         sprintf(str_, "%d", chroms[i]);
