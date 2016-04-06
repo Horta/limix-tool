@@ -18,7 +18,6 @@ def h2_correct(h2, prevalence, ascertainment):
     c2 = ( m*((ascertainment-prevalence)/(1-prevalence)) - t)
     theta = m * c1 * c2
     # h2 = (1 - np.sqrt(1 - 4*theta*h2))/(2*theta)
-    ok = theta != 0.0
     if theta != 0.0:
         h2 = (1 - sqrt(1 - 4*theta*h2))/(2*theta)
     return h2
