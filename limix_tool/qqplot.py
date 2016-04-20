@@ -2,7 +2,6 @@ from __future__ import division, absolute_import
 import numpy as np
 from scipy.special import betaincinv
 from numba import jit
-from .qtl import NullScore
 from limix_plot import cycler
 from limix_util.dict_ import OrderedDict
 
@@ -26,11 +25,9 @@ class QQPlot(object):
         self._pv = OrderedDict()
         self._color = dict()
         self._properties = dict()
-        self._null_score = NullScore()
 
     def add(self, pv, label, color=None, props=None):
         self._pv[label] = np.asarray(pv)
-        self._null_score.add(label, pv)
 
         if color:
             self._color[label] = color
