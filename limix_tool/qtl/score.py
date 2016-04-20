@@ -66,6 +66,7 @@ def _rank_confidence_band(nranks, alpha, max_n2ret=100):
 
     n2ret = min(max_n2ret, nranks)
     eps = np.finfo(float).eps
+    nranks = 50
     i2ret = np.logspace(log10(eps), log10(nranks-1-eps), n2ret,
                          endpoint=True)
 
@@ -79,6 +80,27 @@ def _rank_confidence_band(nranks, alpha, max_n2ret=100):
         bottom[i] = left + width * b.ppf(alpha/2.)
 
     return (bottom, mean, top)
+
+    #
+    # left, right = 0., 1.
+    # width = right - left
+    #
+    #
+    # eps = np.finfo(float).eps
+    # nranks = 50
+    # i2ret = np.logspace(log10(eps), log10(nranks-1-eps), n2ret,
+    #                      endpoint=True)
+    #
+    # mean = np.empty(n2ret)
+    # top = np.empty(n2ret)
+    # bottom = np.empty(n2ret)
+    # for (i, i2r) in enumerate(i2ret):
+    #     b = st.beta(i2r + 1, nranks - i2r)
+    #     mean[i] = left + width * b.stats('m').item()
+    #     top[i] = left + width * b.ppf(1-alpha/2.)
+    #     bottom[i] = left + width * b.ppf(alpha/2.)
+    #
+    # return (bottom, mean, top)
 
 def combine_pvalues(pvals, strategy='concat'):
     assert strategy == 'concat'
