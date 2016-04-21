@@ -218,6 +218,9 @@ class WindowScore(object):
         pos = []
         causal = []
 
+        if len(chromids) == 0:
+            raise ValueError("WindowScore needs at least one chromossome.")
+
         offset = 0
         idx_offset = 0
         for cid in sorted(chromids):

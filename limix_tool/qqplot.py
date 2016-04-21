@@ -2,7 +2,7 @@ from __future__ import division, absolute_import
 import numpy as np
 from scipy.special import betaincinv
 from numba import jit
-from limix_plot import cycler
+from limix_plot import cycler_ as cycler
 from limix_util.dict_ import OrderedDict
 
 @jit
