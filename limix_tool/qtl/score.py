@@ -6,6 +6,7 @@ from numba import jit
 from numpy import log10
 from .stats import gcontrol
 from limix_util.array_ import iscrescent
+from limix_math.special import r_squared
 
 @jit
 def first_occurrence(arr, v):
@@ -203,6 +204,14 @@ class _WindowScore(object):
                              np.argsort(pv))
         return cm
 
+class Chromossome(object):
+    __slots__ = ['causals', 'position', 'r2']
+
+    def __init__(self, position, causals, r2=None):
+        self.position = np.asarray(position, int)
+        self.causals = np.asarray(causals, int)
+        self.r2 = np.asarray(r2, float)
+
 class WindowScore(object):
     def __init__(self, wsize=50000):
         """Provide a couple of scores based on the idea of windows around
@@ -212,7 +221,7 @@ class WindowScore(object):
         self._wsize = int(wsize)
         self._chrom = dict()
 
-    def set_chrom(self, chromid, pos, causal):
+    def set_chrom(self, chromid, pos, causal, X=None, r2=None):
         """
             :param causals: Indices defining the causal markers.
             :param pos: Within-chromossome base-pair position of each candidate
@@ -220,7 +229,19 @@ class WindowScore(object):
         """
         pos = np.asarray(pos, int)
         assert iscrescent(pos)
-        self._chrom[chromid] = (np.asarray(causal, int), pos)
+        if X is None and r2 is None:
+            r2 = np.ones((len(causal), len(pos)))
+        elif r2 is None:
+            X = np.asarray(X, float)
+            r2s = []
+            for c in causal:
+                r2 = []
+                xc = X[:, c]
+                for xi in X.T:
+                    r2.append(r_squared(xc, xi))
+                r2s.append(r2)
+            r2 = np.vstack(r2s)
+        self._chrom[chromid] = Chromossome(pos, causal, r2)
 
     def _get_window_score(self, chromids):
         pos = []
@@ -232,12 +253,12 @@ class WindowScore(object):
         offset = 0
         idx_offset = 0
         for cid in sorted(chromids):
-            pos.append(offset + self._chrom[cid][1])
+            pos.append(offset + self._chrom[cid].position)
             offset += pos[-1][-1] + int(self._wsize / 2 + 1)
 
-            if len(self._chrom[cid][0]) > 0:
-                causal.append(idx_offset + self._chrom[cid][0])
-                idx_offset += len(self._chrom[cid][1])
+            if len(self._chrom[cid].causals) > 0:
+                causal.append(idx_offset + self._chrom[cid].causals)
+                idx_offset += len(self._chrom[cid].position)
 
         pos = np.concatenate(pos)
         causal = np.concatenate(causal)

@@ -34,5 +34,24 @@ class TestScore(unittest.TestCase):
         np.testing.assert_array_almost_equal(ideal, cm.precision[95:97])
         self.assertAlmostEqual(cm.recall[31], 0.111111111111)
 
+    def test_window_score_X(self):
+        random = np.random.RandomState(4875)
+        n = 100
+        p = 500
+        ws = WindowScore()
+        pos = np.sort(random.choice(1000000, n, replace=False))
+        X = random.randint(0, 3, size=(n, p))
+
+        causals = [4, 51]
+
+        ws.set_chrom(22, pos, causals, X=X)
+        pv = random.rand(n)
+        cm = ws.confusion(pv)
+        ideal = [0.0947368421, 0.0937500000]
+
+        np.testing.assert_array_almost_equal(ideal, cm.precision[95:97])
+        self.assertAlmostEqual(cm.recall[31], 0.111111111111)
+
+
 if __name__ == '__main__':
     unittest.main()
