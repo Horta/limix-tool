@@ -1,23 +1,39 @@
 from __future__ import division, absolute_import
 import numpy as np
+import colour
 from scipy.special import betaincinv
-from numba import jit
+from numba import jit, void, int64, float64
 from limix_plot import cycler_ as cycler
 from limix_util.dict_ import OrderedDict
+from ncephes.cprob import incbi
 
-@jit
+@jit(void(float64, int64, float64[:], float64[:], float64[:]),
+     nogil=True, nopython=True)
+def _do_rank_confidence_band(alpha, n, bottom, mean, top):
+    for k in range(1, n+1):
+        top[k-1] = incbi(k, n + 1. - k, 1-alpha)
+        mean[k-1] = k/(n+1.)
+        bottom[k-1] = incbi(k, n + 1. - k, alpha)
+
 def _rank_confidence_band(nranks):
     alpha = 0.01
     n = nranks
 
-    mean = np.linspace(1./(n+1), n/(n+1.), n, endpoint=True)
+    mean = np.empty(n)
     top = np.empty(n)
     bottom = np.empty(n)
-    for k in range(1, n+1):
-        top[k-1] = betaincinv(k, n + 1 - k, 1-alpha)
-        bottom[k-1] = betaincinv(k, n + 1 - k, alpha)
+
+    _do_rank_confidence_band(alpha, n, bottom, mean, top)
 
     return (bottom, mean, top)
+
+def _expected(n):
+    if n not in _expected.cache:
+        lnpv = np.linspace(1/(n+1), n/(n+1), n, endpoint=True)
+        lnpv = np.flipud(-np.log10(lnpv))
+        _expected.cache[n] = lnpv
+    return _expected.cache[n]
+_expected.cache = dict()
 
 class QQPlot(object):
     def __init__(self, axes):
@@ -46,6 +62,7 @@ class QQPlot(object):
     def plot(self, confidence=True, plot_top=100, legend=True):
         axes = self._axes
         labels = self._pv.keys()
+
         for label in labels:
             self._plot_points(label, plot_top)
 
@@ -82,10 +99,7 @@ class QQPlot(object):
         lpv = -np.log10(self._pv[label])
         lpv.sort()
 
-        n = len(lpv)
-        lnpv = np.linspace(1/(n+1), n/(n+1), n, endpoint=True)
-        lnpv = np.flipud(-np.log10(lnpv))
-        return (lnpv, lpv)
+        return (_expected(len(lpv)), lpv)
 
     def _plot_legend(self, labels):
         axes = self._axes
@@ -114,7 +128,16 @@ class QQPlot(object):
         if self._properties[label]:
             rest.update(self._properties[label])
 
-        axes.plot(lnpv[-n:], lpv[-n:], 'o',
+        try:
+            ec = colour.Color(self._color[label])
+        except ValueError:
+            ec = colour.Color('#' + self._color[label])
+
+        ec = int(ec.get_hex_l()[1:], base=16)
+        ec = (ec & 0xfefefe) >> 1
+        ec = colour.Color('#' + hex(ec)[2:]).get_web()
+
+        axes.plot(lnpv[-n:], lpv[-n:], 'o', markeredgecolor=ec,
                   clip_on=False, zorder=100, **rest)
 
         axes.set_ylabel(r'Observed -log10(P-value)')
@@ -130,6 +153,6 @@ class QQPlot(object):
 
         x = y = me[0], me[-1]
         axes.plot(x, y, 'black')
-        axes.fill_between(me, bo, to, lw=1.0,
-                          edgecolor='black', facecolor='0.95',
+        axes.fill_between(me, bo, to, lw=0.0,
+                          edgecolor='black', facecolor='0.90',
                           clip_on=False)

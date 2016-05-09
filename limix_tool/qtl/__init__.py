@@ -6,3 +6,4 @@ from .stats import gcontrol
 from .stats import qvalues
 from .stats import hwe_stat
 from .stats import hwe_test
+from .rocplot import ROCPlot

@@ -362,6 +362,25 @@ class ConfusionMatrix(object):
         """
         return getter(lambda i: 2 * self.TP[i] / (2*self.TP[i] + self.FP[i] + self.FN[i]))
 
+    def roc(self):
+        tpr = self.tpr[1:]
+        fpr = self.fpr[1:]
+
+        idx = np.argsort(fpr)
+        fpr = fpr[idx]
+        tpr = tpr[idx]
+
+        return (fpr, tpr)
+
+def auc(fpr, tpr):
+    left = fpr[0]
+    area = 0.
+    for i in range(1, len(fpr)):
+        width = fpr[i] - left
+        area += width * tpr[i-1]
+        left = fpr[i]
+    area += (1 - left) * tpr[-1]
+    return area
 
 def _confusion_matrix_tp_fp(n, ins_pos, true_set, idx_rank, TP, FP):
     TP[0] = 0

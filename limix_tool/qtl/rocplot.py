@@ -1,4 +1,5 @@
 from numpy import asarray
+import numpy as np
 from limix_plot.consensus_curve import ConsensusCurve
 import limix_plot.cycler_ as cycler
 from limix_util.dict_ import OrderedDict
@@ -26,7 +27,7 @@ class ROCPlot(object):
                 else:
                     self._color[label] = None
 
-        self._pv[label].append(asarray(pv))
+        self._pv[label].append(pv)
 
     def set_chromossome(self, label, positions, causals):
         self._window_score.set_chrom(label, positions, causals)
@@ -52,7 +53,7 @@ class ROCPlot(object):
         axes.set_xlabel('False-positive rate')
         axes.set_ylabel('True-positive rate')
 
-        self._ccurve.plot()
+        self._ccurve.plot(same_steps=True)
 
         eps = 1e-4
         axes.set_xlim([0, 1 + eps])
@@ -60,6 +61,8 @@ class ROCPlot(object):
 
         if legend:
             self._plot_legend(self._pv.keys())
+
+        return axes
 
     def _plot_legend(self, labels):
         axes = self._axes

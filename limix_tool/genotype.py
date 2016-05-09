@@ -1,6 +1,6 @@
 import numpy as np
 
-def maf_exclusion(X, maf=0.05):
+def maf(X):
     X = np.asarray(X, float)
     u = np.unique(X)
     res = set(u).difference([0., 1., 2.])
@@ -11,5 +11,8 @@ def maf_exclusion(X, maf=0.05):
 
     mnalleles = np.minimum(nalleles_a, nalleles_b)
     mnalleles /= 2*X.shape[0]
-    ok = mnalleles > maf
-    return ok
+
+    return mnalleles
+
+def maf_exclusion(X, maf=0.05):
+    return maf(X) > maf

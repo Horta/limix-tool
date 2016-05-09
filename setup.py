@@ -88,7 +88,7 @@ def setup_package():
 
     # write_version()
 
-    install_requires = ['hcache', 'limix_math', 'limix_util']
+    install_requires = ['hcache', 'limix_math', 'limix_util', 'colour']
     setup_requires = []
 
     metadata = dict(
