@@ -64,7 +64,9 @@ def plink_extension():
     return ext
 
 def get_test_suite():
+    import logging
     from unittest import TestLoader
+    logging.basicConfig(level=logging.WARN)
     return TestLoader().discover(PKG_NAME)
 
 def write_version():

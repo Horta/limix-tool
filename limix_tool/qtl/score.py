@@ -144,7 +144,7 @@ class NullScore(object):
 
 
 class _WindowScore(object):
-    def __init__(self, causal, pos, wsize=50000):
+    def __init__(self, causal, pos, wsize=50000, corr=None):
         """Provide a couple of scores based on the idea of windows around
            genetic markers.
 
@@ -152,7 +152,7 @@ class _WindowScore(object):
            :param pos: Base-pair position of each candidate marker, in crescent
                        order.
         """
-        self._logger = logging.getLogger()
+        self._logger = logging.getLogger(__name__)
         wsize = int(wsize)
         self._pv = dict()
         self._sidx = dict()
@@ -168,21 +168,30 @@ class _WindowScore(object):
 
         causal = asarray(causal, int)
 
+        if corr is None:
+            corr = np.ones((len(causal), len(pos)))
+        else:
+            corr = np.asarray(corr, float)
+            assert corr.shape[0] == len(causal)
+            assert corr.shape[1] == len(pos)
+            assert np.all(corr[:] >= 0.)
+
         assert len(causal) == len(np.unique(causal))
-        marker_within_window = set()
-        for c in causal:
+        ld_causal_markers = set()
+        for (j, c) in enumerate(causal):
             if wsize == 1:
                 right = left = pos[c]
             else:
                 left = _walk_left(pos, c, int(wsize/2))
                 right = _walk_right(pos, c, int(wsize/2))
             for i in range(left, right+1):
-                marker_within_window.add(i)
+                if corr[j, i] >= 0.5:
+                    ld_causal_markers.add(i)
 
-        self._P = len(marker_within_window)
+        self._P = len(ld_causal_markers)
         self._N = len(pos) - self._P
 
-        self._marker_within_window = list(marker_within_window)
+        self._ld_causal_markers = list(ld_causal_markers)
 
         self._logger.info("Found %d positive and %d negative markers.",
                           self._P, self._N)
@@ -190,7 +199,7 @@ class _WindowScore(object):
     def confusion(self, pv):
         pv = np.asarray(pv, float)
         assert self._ncandidates == len(pv)
-        cm = ConfusionMatrix(self._P, self._N, self._marker_within_window,
+        cm = ConfusionMatrix(self._P, self._N, self._ld_causal_markers,
                              np.argsort(pv))
         return cm
 
@@ -199,7 +208,7 @@ class WindowScore(object):
         """Provide a couple of scores based on the idea of windows around
            genetic markers.
         """
-        self._logger = logging.getLogger()
+        self._logger = logging.getLogger(__name__)
         self._wsize = int(wsize)
         self._chrom = dict()
 
@@ -209,7 +218,6 @@ class WindowScore(object):
             :param pos: Within-chromossome base-pair position of each candidate
                         marker, in crescent order.
         """
-        # self._chrom[chromid] = _WindowScore(causal, pos, self._wsize)
         pos = np.asarray(pos, int)
         assert iscrescent(pos)
         self._chrom[chromid] = (np.asarray(causal, int), pos)
