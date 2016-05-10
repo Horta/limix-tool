@@ -186,7 +186,7 @@ class _WindowScore(object):
                 left = _walk_left(pos, c, int(wsize/2))
                 right = _walk_right(pos, c, int(wsize/2))
             for i in range(left, right+1):
-                if r2[j, i] >= 0.5:
+                if r2[j, i] >= 0.8:
                     ld_causal_markers.add(i)
 
         self._P = len(ld_causal_markers)
