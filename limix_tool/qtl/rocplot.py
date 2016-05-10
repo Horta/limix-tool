@@ -29,8 +29,8 @@ class ROCPlot(object):
 
         self._pv[label].append(pv)
 
-    def set_chromossome(self, label, positions, causals):
-        self._window_score.set_chrom(label, positions, causals)
+    def set_chromossome(self, label, positions, causals, X=None, r2=None):
+        self._window_score.set_chrom(label, positions, causals, X=X, r2=r2)
 
     def _plot_for_label(self, label):
         for pv in self._pv[label]:

@@ -145,7 +145,7 @@ class NullScore(object):
 
 
 class _WindowScore(object):
-    def __init__(self, causal, pos, wsize=50000, corr=None):
+    def __init__(self, causal, pos, wsize=50000, r2=None):
         """Provide a couple of scores based on the idea of windows around
            genetic markers.
 
@@ -169,13 +169,13 @@ class _WindowScore(object):
 
         causal = asarray(causal, int)
 
-        if corr is None:
-            corr = np.ones((len(causal), len(pos)))
+        if r2 is None:
+            r2 = np.ones((len(causal), len(pos)))
         else:
-            corr = np.asarray(corr, float)
-            assert corr.shape[0] == len(causal)
-            assert corr.shape[1] == len(pos)
-            assert np.all(corr[:] >= 0.)
+            r2 = np.asarray(r2, float)
+            assert r2.shape[0] == len(causal)
+            assert r2.shape[1] == len(pos)
+            assert np.all(r2[:] >= 0.)
 
         assert len(causal) == len(np.unique(causal))
         ld_causal_markers = set()
@@ -186,7 +186,7 @@ class _WindowScore(object):
                 left = _walk_left(pos, c, int(wsize/2))
                 right = _walk_right(pos, c, int(wsize/2))
             for i in range(left, right+1):
-                if corr[j, i] >= 0.5:
+                if r2[j, i] >= 0.5:
                     ld_causal_markers.add(i)
 
         self._P = len(ld_causal_markers)
@@ -244,6 +244,7 @@ class WindowScore(object):
         self._chrom[chromid] = Chromossome(pos, causal, r2)
 
     def _get_window_score(self, chromids):
+        r2_ = []
         pos = []
         causal = []
 
@@ -259,10 +260,22 @@ class WindowScore(object):
             if len(self._chrom[cid].causals) > 0:
                 causal.append(idx_offset + self._chrom[cid].causals)
                 idx_offset += len(self._chrom[cid].position)
+                r2_.append(self._chrom[cid].r2)
 
         pos = np.concatenate(pos)
         causal = np.concatenate(causal)
-        return _WindowScore(causal, pos, self._wsize)
+
+        r2 = np.zeros((len(causal), len(pos)))
+        i_offset = 0
+        j_offset = 0
+        for r2i in r2_:
+            si = r2i.shape[0]
+            sj = r2i.shape[1]
+            r2[i_offset:i_offset+si, j_offset:j_offset+sj] = r2i
+            i_offset += si
+            j_offset += sj
+
+        return _WindowScore(causal, pos, self._wsize, r2=r2)
 
     def confusion(self, pv):
         if isinstance(pv, dict):
