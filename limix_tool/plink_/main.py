@@ -5,8 +5,8 @@ from numpy import asarray
 import numpy as np
 from numba import jit, uint8, int64, void
 from . import write
-from limix_util import array_
-from limix_util.path_ import bin_exists
+from limix_math import array
+from limix_util.path import bin_exists
 
 def check_plink_exists():
     if not bin_exists('plink'):

@@ -5,7 +5,7 @@ from numpy import asarray
 from numba import jit
 from numpy import log10
 from .stats import gcontrol
-from limix_util.array_ import iscrescent
+from limix_math.array import iscrescent
 from limix_math.special import r_squared
 
 @jit

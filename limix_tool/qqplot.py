@@ -4,7 +4,7 @@ import colour
 from scipy.special import betaincinv
 from numba import jit, void, int64, float64
 from limix_plot import cycler_ as cycler
-from limix_util.dict_ import OrderedDict
+from limix_util.dict import OrderedDict
 from ncephes.cprob import incbi
 
 @jit(void(float64, int64, float64[:], float64[:], float64[:]),

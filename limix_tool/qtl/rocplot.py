@@ -2,7 +2,7 @@ from numpy import asarray
 import numpy as np
 from limix_plot.consensus_curve import ConsensusCurve
 import limix_plot.cycler_ as cycler
-from limix_util.dict_ import OrderedDict
+from limix_util.dict import OrderedDict
 from .score import WindowScore
 
 class ROCPlot(object):

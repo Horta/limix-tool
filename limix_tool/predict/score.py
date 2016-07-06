@@ -4,7 +4,7 @@ import numpy as np
 from numpy import asarray
 from numba import jit
 from numpy import log10
-from limix_util.array_ import iscrescent
+from limix_math.array import iscrescent
 from limix_math.special import r_squared
 
 def roc_curve(multi_score, method, max_fpr=0.05):
