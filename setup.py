@@ -7,7 +7,7 @@ from Cython.Build import cythonize
 from Cython.Distutils import build_ext
 
 PKG_NAME = 'limix_tool'
-VERSION = '0.1.17'
+VERSION = '0.1.16'
 
 try:
     from distutils.command.bdist_conda import CondaDistribution
@@ -85,7 +85,7 @@ def setup_package():
     os.chdir(src_path)
     sys.path.insert(0, src_path)
 
-    install_requires = ['hcache', 'limix_math', 'limix_util', 'colour']
+    install_requires = ['hcache', 'limix_math=>0.0.12', 'limix_util', 'colour']
     setup_requires = []
 
     metadata = dict(
