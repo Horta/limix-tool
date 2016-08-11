@@ -7,7 +7,7 @@ from Cython.Build import cythonize
 from Cython.Distutils import build_ext
 
 PKG_NAME = 'limix_tool'
-VERSION  = '0.1.15'
+VERSION = '0.1.16'
 
 try:
     from distutils.command.bdist_conda import CondaDistribution
@@ -22,27 +22,35 @@ except ImportError:
     print("Error: numpy package couldn't be found." +
           " Please, install it so I can proceed.")
     sys.exit(1)
+else:
+    print("Good: numpy %s" % np.__version__)
 
 try:
     import scipy
 except ImportError:
-    print("Error: scipy package couldn't be found."+
+    print("Error: scipy package couldn't be found." +
           " Please, install it so I can proceed.")
     sys.exit(1)
+else:
+    print("Good: scipy %s" % scipy.__version__)
 
 try:
     import cython
 except ImportError:
-    print("Error: cython package couldn't be found."+
+    print("Error: cython package couldn't be found." +
           " Please, install it so I can proceed.")
     sys.exit(1)
+else:
+    print("Good: cython %s" % cython.__version__)
 
 try:
     import numba
 except ImportError:
-    print("Error: numba package couldn't be found."+
+    print("Error: numba package couldn't be found." +
           " Please, install it so I can proceed.")
     sys.exit(1)
+else:
+    print("Good: numba %s" % numba.__version__)
 
 
 def plink_extension():
@@ -63,32 +71,19 @@ def plink_extension():
 
     return ext
 
+
 def get_test_suite():
     import logging
     from unittest import TestLoader
     logging.basicConfig(level=logging.WARN)
     return TestLoader().discover(PKG_NAME)
 
-def write_version():
-    cnt = """
-# THIS FILE IS GENERATED FROM %(package_name)s SETUP.PY
-version = '%(version)s'
-"""
-    filename = os.path.join(PKG_NAME, 'version.py')
-    a = open(filename, 'w')
-    try:
-        a.write(cnt % {'version': VERSION,
-                       'package_name': PKG_NAME.upper()})
-    finally:
-        a.close()
 
 def setup_package():
     src_path = os.path.dirname(os.path.abspath(sys.argv[0]))
     old_path = os.getcwd()
     os.chdir(src_path)
     sys.path.insert(0, src_path)
-
-    # write_version()
 
     install_requires = ['hcache', 'limix_math', 'limix_util', 'colour']
     setup_requires = []
