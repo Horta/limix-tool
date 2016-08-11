@@ -85,7 +85,7 @@ def setup_package():
     os.chdir(src_path)
     sys.path.insert(0, src_path)
 
-    install_requires = ['hcache', 'limix_math=>0.0.12', 'limix_util', 'colour']
+    install_requires = ['hcache', 'limix_math>=0.0.12', 'limix_util', 'colour']
     setup_requires = []
 
     metadata = dict(
