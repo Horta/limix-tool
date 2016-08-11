@@ -2,19 +2,23 @@ from __future__ import division
 from numpy import asarray
 from numpy import sqrt
 import scipy.stats as stats
-from limix_math.dist.norm import pdf, cdf, sf, logsf, logpdf, logcdf
+from limix_math.dist.norm import pdf, cdf, logsf, logpdf, logcdf
 from numba import jit
 import numpy as np
+
 
 def _lambda_alpha(alpha):
     return pdf(alpha) / (1 - cdf(alpha))
 
+
 def _exp_norm_trunc(t):
     return _lambda_alpha(t)
+
 
 def _mean_truncnorm_rtail(a, mean=0., sd=1.):
     alpha = (a - mean) / sd
     return mean + sd * np.exp(logpdf(alpha) - logsf(alpha))
+
 
 def _mean_truncnorm_ltail(b, mean=0., sd=1.):
     beta = (b - mean) / sd
@@ -22,32 +26,38 @@ def _mean_truncnorm_ltail(b, mean=0., sd=1.):
     lPhi_b = logcdf(beta)
     return mean - sd * np.exp(lphi_b - lPhi_b)
 
+
 def _var_truncnorm_rtail(a, mean=0., sd=1.):
     alpha = (a - mean) / sd
     lphi_a = logpdf(alpha)
     lambda_ = np.exp(lphi_a - logsf(alpha))
-    return sd*sd*(1.0 - lambda_ * (lambda_ - alpha))
+    return sd * sd * (1.0 - lambda_ * (lambda_ - alpha))
+
 
 def _var_truncnorm_ltail(b, mean=0., sd=1.):
     return _var_truncnorm_rtail(-b, -mean, sd)
 
+
 def _mom2_truncnorm_rtail(a):
     return _var_truncnorm_rtail(a) + _mean_truncnorm_rtail(a)**2
 
+
 def _mom2_truncnorm_ltail(a):
     return _var_truncnorm_ltail(a) + _mean_truncnorm_ltail(a)**2
+
 
 def h2_correct(h2, prevalence, ascertainment):
     h2 = asarray(h2)
     t = -stats.norm.ppf(prevalence)
     m = _exp_norm_trunc(t)
-    c1 = ((ascertainment-prevalence)/(1-prevalence))
-    c2 = ( m*((ascertainment-prevalence)/(1-prevalence)) - t)
+    c1 = ((ascertainment - prevalence) / (1 - prevalence))
+    c2 = (m * ((ascertainment - prevalence) / (1 - prevalence)) - t)
     theta = m * c1 * c2
     # h2 = (1 - np.sqrt(1 - 4*theta*h2))/(2*theta)
     if theta != 0.0:
-        h2 = (1 - sqrt(1 - 4*theta*h2))/(2*theta)
+        h2 = (1 - sqrt(1 - 4 * theta * h2)) / (2 * theta)
     return h2
+
 
 def _h2_correct2_eq_eq(h2, prevalence, ascertainment, real_h2):
     h2 = asarray(h2)
@@ -58,16 +68,17 @@ def _h2_correct2_eq_eq(h2, prevalence, ascertainment, real_h2):
 
     t = stats.norm.ppf(1 - pre)
 
-    hj  = _mom2_truncnorm_rtail(t/real_h)
-    hj2 = _mom2_truncnorm_ltail(t/real_h)
+    hj = _mom2_truncnorm_rtail(t / real_h)
+    hj2 = _mom2_truncnorm_ltail(t / real_h)
 
-    hr  = _mom2_truncnorm_rtail(t/np.sqrt(1-real_h2))
-    hr2 = _mom2_truncnorm_ltail(t/np.sqrt(1-real_h2))
+    hr = _mom2_truncnorm_rtail(t / np.sqrt(1 - real_h2))
+    hr2 = _mom2_truncnorm_ltail(t / np.sqrt(1 - real_h2))
 
     A = asc * hr + (1 - asc) * hr2
     B = asc * hj + (1 - asc) * hj2
 
     return h2 * A / (h2 * A + (1 - h2) * B)
+
 
 def h2_correct2(h2, prevalence, ascertainment):
     pv = h2
@@ -83,37 +94,42 @@ def h2_correct2(h2, prevalence, ascertainment):
         print("Warning: maximum number of iterations reached in h2_correct2")
     return v
 
+
 def h2_observed_space_correct(h2, prevalence, ascertainment):
-    t = stats.norm.ppf(1-prevalence)
+    t = stats.norm.ppf(1 - prevalence)
     z = stats.norm.pdf(t)
     k = prevalence * (1 - prevalence)
     p = ascertainment * (1 - ascertainment)
     return asarray(h2) * k**2 / (z**2 * p)
 
+
 def dichotomous_h2_to_liability_h2(h2, prevalence):
     h2 = asarray(h2, float)
-    t = stats.norm.ppf(1-prevalence)
+    t = stats.norm.ppf(1 - prevalence)
     z = stats.norm.pdf(t)
     return asarray(h2) * (prevalence * (1 - prevalence)) / z**2
+
 
 def correct_liability_h2(h2, prevalence, ascertainment):
     part1 = (prevalence * (1 - prevalence))
     part2 = (ascertainment * (1 - ascertainment))
     return h2 * (part1 / part2)
 
+
 @jit
 def _haseman_elston_regression(y, K):
     r1 = 0.
     r2 = 0.
     i = 0
-    while i < y.shape[0]-1:
-        j = i+1
+    while i < y.shape[0] - 1:
+        j = i + 1
         while j < y.shape[0]:
-            r1 += y[i] * y[j] * K[i,j]
-            r2 += K[i,j]*K[i,j]
+            r1 += y[i] * y[j] * K[i, j]
+            r2 += K[i, j] * K[i, j]
             j += 1
         i += 1
     return r1 / r2
+
 
 def haseman_elston_regression(y, K):
     y = asarray(y, float)
@@ -122,20 +138,23 @@ def haseman_elston_regression(y, K):
     # assert np.all([ui in [0., 1.] for ui in u])
     return _haseman_elston_regression(y, K)
 
+
 def sample_phenotype(h2, n, prev):
     h = np.sqrt(h2)
     g = np.random.randn(n) * h
-    e = np.random.randn(n) * np.sqrt(1-h2)
+    e = np.random.randn(n) * np.sqrt(1 - h2)
     t = prevalence_threshold(prev)
     y = np.zeros(n)
     y[g + e > t] = 1.
     return (y, g, e)
 
+
 def prevalence_threshold(prev):
     return -stats.norm.ppf(prev)
 
+
 def _subselect(y, ncases, ncontrols):
-    selected = np.empty(ncases+ncontrols, int)
+    selected = np.empty(ncases + ncontrols, int)
     idx = np.random.permutation(n)
     i = 0
     while ncases + ncontrols > 0:
@@ -149,6 +168,7 @@ def _subselect(y, ncases, ncontrols):
         i += 1
     return selected
 
+
 def subselect(ascertainment, y):
     tcases = np.sum(y)
     tcontrols = len(y) - tcases
@@ -160,8 +180,8 @@ def subselect(ascertainment, y):
     cases = min(tcases, cases)
     controls = min(tcontrols, controls)
 
-    N1 = cases/asc
-    N2 = controls/(1-asc)
+    N1 = cases / asc
+    N2 = controls / (1 - asc)
 
     N = np.floor(min(N1, N2))
 
