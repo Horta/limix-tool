@@ -5,8 +5,9 @@ from numpy import asarray
 from numba import jit
 from numpy import log10
 from .stats import gcontrol
-from limix_math.array import iscrescent
+from limix_math import iscrescent
 from limix_math.special import r_squared
+
 
 @jit
 def first_occurrence(arr, v):
@@ -14,6 +15,7 @@ def first_occurrence(arr, v):
         if arr[i] == v:
             return i
     return None
+
 
 @jit
 def _walk_left(pos, c, dist):
@@ -30,6 +32,7 @@ def _walk_left(pos, c, dist):
     assert i <= c
     return i
 
+
 @jit
 def _walk_right(pos, c, dist):
     assert dist > 0
@@ -37,7 +40,7 @@ def _walk_right(pos, c, dist):
     middle = pos[c]
     i = c
     n = len(pos)
-    while i < n-1 and step < dist:
+    while i < n - 1 and step < dist:
         i += 1
         assert pos[i] >= middle
         step = (pos[i] - middle)
@@ -45,6 +48,7 @@ def _walk_right(pos, c, dist):
         i -= 1
     assert i >= c
     return i
+
 
 def roc_curve(multi_score, method, max_fpr=0.05):
     max_fpr = float(max_fpr)
@@ -54,9 +58,10 @@ def roc_curve(multi_score, method, max_fpr=0.05):
     for (i, fpr) in enumerate(fprs):
         tprs_ = multi_score.get_tprs(method, fpr=fpr, approach='rank')
         tprs[i] = np.mean(tprs_)
-        assert tprs[i] >= tprs[max(i-1, 0)]
-        tprs_stde[i] = np.std(tprs_)/np.sqrt(len(tprs_))
+        assert tprs[i] >= tprs[max(i - 1, 0)]
+        tprs_stde[i] = np.std(tprs_) / np.sqrt(len(tprs_))
     return (fprs, tprs, tprs_stde)
+
 
 def _rank_confidence_band(nranks, alpha, max_n2ret=100):
     """calculate theoretical expectations for qqplot"""
@@ -68,8 +73,8 @@ def _rank_confidence_band(nranks, alpha, max_n2ret=100):
     n2ret = min(max_n2ret, nranks)
     eps = np.finfo(float).eps
     nranks = 50
-    i2ret = np.logspace(log10(eps), log10(nranks-1-eps), n2ret,
-                         endpoint=True)
+    i2ret = np.logspace(log10(eps), log10(nranks - 1 - eps), n2ret,
+                        endpoint=True)
 
     mean = np.empty(n2ret)
     top = np.empty(n2ret)
@@ -77,8 +82,8 @@ def _rank_confidence_band(nranks, alpha, max_n2ret=100):
     for (i, i2r) in enumerate(i2ret):
         b = st.beta(i2r + 1, nranks - i2r)
         mean[i] = left + width * b.stats('m').item()
-        top[i] = left + width * b.ppf(1-alpha/2.)
-        bottom[i] = left + width * b.ppf(alpha/2.)
+        top[i] = left + width * b.ppf(1 - alpha / 2.)
+        bottom[i] = left + width * b.ppf(alpha / 2.)
 
     return (bottom, mean, top)
 
@@ -103,11 +108,14 @@ def _rank_confidence_band(nranks, alpha, max_n2ret=100):
     #
     # return (bottom, mean, top)
 
+
 def combine_pvalues(pvals, strategy='concat'):
     assert strategy == 'concat'
     return np.concatenate(pvals)
 
+
 class NullScore(object):
+
     def __init__(self):
         self._pv = dict()
 
@@ -145,6 +153,7 @@ class NullScore(object):
 
 
 class _WindowScore(object):
+
     def __init__(self, causal, pos, wsize=50000, r2=None):
         """Provide a couple of scores based on the idea of windows around
            genetic markers.
@@ -163,7 +172,7 @@ class _WindowScore(object):
 
         total_size = pos[-1] - pos[0]
         if wsize > 0.1 * total_size:
-            perc = wsize/total_size * 100
+            perc = wsize / total_size * 100
             self._logger.warn('The window size is %d%% of the total candidate' +
                               ' region.', int(perc))
 
@@ -183,9 +192,9 @@ class _WindowScore(object):
             if wsize == 1:
                 right = left = pos[c]
             else:
-                left = _walk_left(pos, c, int(wsize/2))
-                right = _walk_right(pos, c, int(wsize/2))
-            for i in range(left, right+1):
+                left = _walk_left(pos, c, int(wsize / 2))
+                right = _walk_right(pos, c, int(wsize / 2))
+            for i in range(left, right + 1):
                 if r2[j, i] >= 0.8:
                     ld_causal_markers.add(i)
 
@@ -204,6 +213,7 @@ class _WindowScore(object):
                              np.argsort(pv))
         return cm
 
+
 class Chromossome(object):
     __slots__ = ['causals', 'position', 'r2']
 
@@ -212,7 +222,9 @@ class Chromossome(object):
         self.causals = np.asarray(causals, int)
         self.r2 = np.asarray(r2, float)
 
+
 class WindowScore(object):
+
     def __init__(self, wsize=50000):
         """Provide a couple of scores based on the idea of windows around
            genetic markers.
@@ -271,7 +283,7 @@ class WindowScore(object):
         for r2i in r2_:
             si = r2i.shape[0]
             sj = r2i.shape[1]
-            r2[i_offset:i_offset+si, j_offset:j_offset+sj] = r2i
+            r2[i_offset:i_offset + si, j_offset:j_offset + sj] = r2i
             i_offset += si
             j_offset += sj
 
@@ -285,8 +297,10 @@ class WindowScore(object):
             ws = self._get_window_score(self._chrom.keys())
         return ws.confusion(pv)
 
+
 def getter(func):
     class ItemGetter(object):
+
         def __getitem__(self, i):
             return func(i)
 
@@ -307,10 +321,12 @@ def getter(func):
 
     return ItemGetter()
 
+
 class ConfusionMatrix(object):
+
     def __init__(self, P, N, true_set, idx_rank):
-        self._TP = np.empty(P+N+1, dtype=int)
-        self._FP = np.empty(P+N+1, dtype=int)
+        self._TP = np.empty(P + N + 1, dtype=int)
+        self._FP = np.empty(P + N + 1, dtype=int)
         assert len(idx_rank) == P + N
 
         true_set = np.asarray(true_set, int)
@@ -320,7 +336,7 @@ class ConfusionMatrix(object):
 
         ins_pos = np.searchsorted(true_set, idx_rank)
         _confusion_matrix_tp_fp(P + N, ins_pos, true_set, idx_rank,
-                          self._TP, self._FP)
+                                self._TP, self._FP)
         self._N = N
         self._P = P
 
@@ -402,7 +418,7 @@ class ConfusionMatrix(object):
     def f1score(self):
         """ F1 score (harmonic mean of precision and sensitivity).
         """
-        return getter(lambda i: 2 * self.TP[i] / (2*self.TP[i] + self.FP[i] + self.FN[i]))
+        return getter(lambda i: 2 * self.TP[i] / (2 * self.TP[i] + self.FP[i] + self.FN[i]))
 
     def roc(self):
         tpr = self.tpr[1:]
@@ -414,27 +430,29 @@ class ConfusionMatrix(object):
 
         return (fpr, tpr)
 
+
 def auc(fpr, tpr):
     left = fpr[0]
     area = 0.
     for i in range(1, len(fpr)):
         width = fpr[i] - left
-        area += width * tpr[i-1]
+        area += width * tpr[i - 1]
         left = fpr[i]
     area += (1 - left) * tpr[-1]
     return area
+
 
 def _confusion_matrix_tp_fp(n, ins_pos, true_set, idx_rank, TP, FP):
     TP[0] = 0
     FP[0] = 0
     i = 0
     while i < n:
-        FP[i+1] = FP[i]
-        TP[i+1] = TP[i]
+        FP[i + 1] = FP[i]
+        TP[i + 1] = TP[i]
 
         j = ins_pos[i]
         if j == len(true_set) or true_set[j] != idx_rank[i]:
-            FP[i+1] += 1
+            FP[i + 1] += 1
         else:
-            TP[i+1] += 1
+            TP[i + 1] += 1
         i += 1
