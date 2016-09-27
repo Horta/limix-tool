@@ -2,7 +2,11 @@ from __future__ import division
 from numpy import asarray
 from numpy import sqrt
 import scipy.stats as stats
-from limix_math.dist.norm import pdf, cdf, logsf, logpdf, logcdf
+from limix_math.special import normal_pdf as pdf
+from limix_math.special import normal_cdf as cdf
+from limix_math.special import normal_logsf as logsf
+from limix_math.special import normal_logpdf as logpdf
+from limix_math.special import normal_logcdf as logcdf
 from numba import jit
 import numpy as np
 
