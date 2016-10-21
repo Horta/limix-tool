@@ -15,7 +15,7 @@ def setup_package():
 
     setup_requires = [] + pytest_runner
     install_requires = ['pytest', 'hcache', 'limix_math>=0.0.12', 'limix_util',
-                        'colour']
+                        'colour', 'limix-plot>=1.0.2']
     tests_require = install_requires
 
     metadata = dict(
@@ -23,7 +23,7 @@ def setup_package():
         version='1.0.1',
         maintainer="Limix Developers",
         maintainer_email="horta@ebi.ac.uk",
-        license="BSD",
+        license="MIT",
         url='http://pmbio.github.io/limix/',
         packages=find_packages(),
         zip_safe=False,
