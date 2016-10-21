@@ -1,82 +1,7 @@
-from __future__ import division, print_function
 import os
 import sys
-from setuptools import setup, find_packages
-from setuptools.extension import Extension
-from Cython.Build import cythonize
-from Cython.Distutils import build_ext
-
-PKG_NAME = 'limix_tool'
-VERSION = '0.1.17'
-
-try:
-    from distutils.command.bdist_conda import CondaDistribution
-except ImportError:
-    conda_present = False
-else:
-    conda_present = True
-
-try:
-    import numpy as np
-except ImportError:
-    print("Error: numpy package couldn't be found." +
-          " Please, install it so I can proceed.")
-    sys.exit(1)
-else:
-    print("Good: numpy %s" % np.__version__)
-
-try:
-    import scipy
-except ImportError:
-    print("Error: scipy package couldn't be found." +
-          " Please, install it so I can proceed.")
-    sys.exit(1)
-else:
-    print("Good: scipy %s" % scipy.__version__)
-
-try:
-    import cython
-except ImportError:
-    print("Error: cython package couldn't be found." +
-          " Please, install it so I can proceed.")
-    sys.exit(1)
-else:
-    print("Good: cython %s" % cython.__version__)
-
-try:
-    import numba
-except ImportError:
-    print("Error: numba package couldn't be found." +
-          " Please, install it so I can proceed.")
-    sys.exit(1)
-else:
-    print("Good: numba %s" % numba.__version__)
-
-
-def plink_extension():
-    curdir = os.path.abspath(os.path.dirname(__file__))
-
-    plink_folder = os.path.join(curdir, 'limix_tool/plink_/')
-
-    src = ['write.pyx']
-    src = [os.path.join(plink_folder, s) for s in src]
-
-    hdr = ['write.pxd']
-    hdr = [os.path.join(plink_folder, h) for h in hdr]
-
-    depends = src + hdr
-
-    ext = Extension('limix_tool/plink_/write', src,
-                    include_dirs=[np.get_include()], depends=depends)
-
-    return ext
-
-
-def get_test_suite():
-    import logging
-    from unittest import TestLoader
-    logging.basicConfig(level=logging.WARN)
-    return TestLoader().discover(PKG_NAME)
+from setuptools import setup
+from setuptools import find_packages
 
 
 def setup_package():
@@ -85,26 +10,34 @@ def setup_package():
     os.chdir(src_path)
     sys.path.insert(0, src_path)
 
-    install_requires = ['hcache', 'limix_math>=0.0.12', 'limix_util', 'colour']
-    setup_requires = []
+    needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
+    pytest_runner = ['pytest-runner'] if needs_pytest else []
+
+    setup_requires = [] + pytest_runner
+    install_requires = ['pytest', 'hcache', 'limix_math>=0.0.12', 'limix_util',
+                        'colour']
+    tests_require = install_requires
 
     metadata = dict(
-        name=PKG_NAME,
+        name='limix-tool',
+        version='1.0.1',
         maintainer="Limix Developers",
-        version=VERSION,
         maintainer_email="horta@ebi.ac.uk",
-        test_suite='setup.get_test_suite',
-        packages=find_packages(),
         license="BSD",
         url='http://pmbio.github.io/limix/',
+        packages=find_packages(),
+        zip_safe=False,
         install_requires=install_requires,
         setup_requires=setup_requires,
-        zip_safe=False,
-        ext_modules=cythonize([plink_extension()]),
-        cmdclass=dict(build_ext=build_ext)
+        tests_require=tests_require,
+        include_package_data=True,
     )
 
-    if conda_present:
+    try:
+        from distutils.command.bdist_conda import CondaDistribution
+    except ImportError:
+        pass
+    else:
         metadata['distclass'] = CondaDistribution
         metadata['conda_buildnum'] = 1
         metadata['conda_features'] = ['mkl']

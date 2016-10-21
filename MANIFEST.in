@@ -1,3 +1,2 @@
 include README.md
-include LICENSE.txt
-recursive-include limix_tool *.pyx *.pxd *.c
+include LICENSE
