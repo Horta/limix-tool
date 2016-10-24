@@ -39,18 +39,21 @@ class TestScore(unittest.TestCase):
         n = 100
         p = 500
         ws = WindowScore()
-        pos = np.sort(random.choice(1000000, n, replace=False))
+        # pos = np.sort(random.choice(1000000, n, replace=False))
+        pos = np.sort(random.choice(1000000, p, replace=False))
         X = random.randint(0, 3, size=(n, p))
 
         causals = [4, 51]
 
         ws.set_chrom(22, pos, causals, X=X)
-        pv = random.rand(n)
+        pv = random.rand(p)
         cm = ws.confusion(pv)
         ideal = [0.0947368421, 0.0937500000]
 
-        np.testing.assert_array_almost_equal(ideal, cm.precision[95:97])
-        self.assertAlmostEqual(cm.recall[31], 0.111111111111)
+        np.testing.assert_array_equal(cm.recall[0], 0)
+        np.testing.assert_array_equal(cm.recall[-1], 1)
+        np.testing.assert_equal(np.isnan(cm.precision[0]), True)
+        np.testing.assert_allclose(cm.precision[95], 0.0105263157895)
 
 
 if __name__ == '__main__':

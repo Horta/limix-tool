@@ -14,7 +14,7 @@ def setup_package():
     pytest_runner = ['pytest-runner'] if needs_pytest else []
 
     setup_requires = [] + pytest_runner
-    install_requires = ['pytest', 'hcache', 'limix_math>=0.0.12', 'limix_util',
+    install_requires = ['pytest', 'hcache', 'limix_math>=1.0.0', 'limix_util',
                         'colour', 'limix-plot>=1.0.2']
     tests_require = install_requires
 

@@ -1,6 +1,7 @@
 from __future__ import division
 import logging
 import numpy as np
+from numpy import nan
 from numpy import asarray
 from numba import jit
 from numpy import log10
@@ -241,6 +242,8 @@ class WindowScore(object):
         """
         pos = np.asarray(pos, int)
         assert iscrescent(pos)
+        if X is not None:
+            assert len(pos) == X.shape[1]
         if X is None and r2 is None:
             r2 = np.ones((len(causal), len(pos)))
         elif r2 is None:
@@ -251,7 +254,7 @@ class WindowScore(object):
                 xc = X[:, c]
                 for xi in X.T:
                     r2.append(r_squared(xc, xi))
-                r2s.append(r2)
+                r2s.append(np.asarray(r2))
             r2 = np.vstack(r2s)
         self._chrom[chromid] = Chromossome(pos, causal, r2)
 
@@ -378,7 +381,7 @@ class ConfusionMatrix(object):
 
     @property
     def precision(self):
-        return getter(lambda i: self.TP[i] / (self.TP[i] + self.FP[i]))
+        return getter(lambda i: nan if i == 0 else self.TP[i] / (self.TP[i] + self.FP[i]))
 
     @property
     def npv(self):
