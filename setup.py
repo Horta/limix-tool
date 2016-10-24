@@ -15,12 +15,12 @@ def setup_package():
 
     setup_requires = [] + pytest_runner
     install_requires = ['pytest', 'hcache', 'limix_math>=1.0.0', 'limix_util',
-                        'colour', 'limix-plot>=1.0.3']
+                        'colour', 'limix_plot>=1.0.3']
     tests_require = install_requires
 
     metadata = dict(
-        name='limix-tool',
-        version='1.0.1',
+        name='limix_tool',
+        version='1.0.2',
         maintainer="Limix Developers",
         maintainer_email="horta@ebi.ac.uk",
         license="MIT",
