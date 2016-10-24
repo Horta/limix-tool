@@ -15,7 +15,7 @@ def setup_package():
 
     setup_requires = [] + pytest_runner
     install_requires = ['pytest', 'hcache', 'limix_math>=1.0.0', 'limix_util',
-                        'colour', 'limix_plot>=1.0.3']
+                        'colour', 'limix_plot>=1.0.5']
     tests_require = install_requires
 
     metadata = dict(
