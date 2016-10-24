@@ -36,13 +36,13 @@ script:
 - pushd /
 - python -c "import limix_tool; limix_tool.test()"
 - popd
-deploy:
-  provider: pypi
-  skip_cleanup: true
-  user: danilo.horta
-  on:
-    branch: master
-  password:
-    secure: FGSgYtrWtLt5ArQkg3DvmWke4Ze34w++ApPvuxpRGHI1fw+nxNgIgE8C8yMhELNyYXdyZQxKohs1kKjZqP/n4FML9v4Ttq2gbFJQAlXRKJ9df+k9nyIU/qPHG9fZ/yWqnVvtJ2gNvaZW66j+NtQ3XL+i16v/bAqHwmgW2ULo8iYsH0X6iS6TPaLxUf0CKpirN6xT65BsqqUmAx2hEHStKV1mLRN5I++DJZ/wwqTL6wWaL6TkLdWwZ0lIf/Ce7GSoHjFTOFZoJ/YNb6eRRdSQI2e0UHgPruKkfRfz8xrXH5dAsEjIlR4GFQh1XfI1LZgFvfGtkBVh0hpuM1w+l0mJT/iOAQXKSpo6P9Wb7EpgMIm0FPyEdHqTr15wis9LpqFkwjChGPn/ADxATIG0gzv0LC4kq0rDlMHrc6M64S1PDeFXXv6sqZ2VVq25VIAks0iKu1C7vuQTY0EmUgVWYBfRpRe7dKvXKI4JPtMLd0F3UymUytkKJgWq4blToqukrTnHW5D5E0JVTuOQBVAoNKOR56Io1cbjb3cr04FELxrueoTtcw6tjLo31B3yeXi4qTgBHkXZiGuc6eVxzB2xWotoR1YJ9prc1nNnJvagmSTP3myRO+UxYzsCQ+1PXKko+w3DOPab+vablTKvUYrkkM1oP7PFWZTWwje16YRY07R/9g4=
 notifications:
   email: false
+deploy:
+  provider: pypi
+  user: danilo.horta
+  password:
+    secure: WUzUIMfP+F95O9UBhfr+pZ6FyHTQ9Yy3ZqS5WQFLs5PcoBYmP9LJ9Eg+fd4LVMvRcneNAIoEfRNF8bfoRbSaxc+JrLdYQZtLGdQ+bY4/wrO9bCiz9LV6OfzTQI6mtsiMTkZFGhsXBBlStQgVSP5QKjMiOLvLQhwqMYMPlYlqtQP/GbEDQ2cha8ZSZ+hJc/stTW7OnA6s+gb4LwPUSmt+2zzWEB0wilYIdvENLwuIPY4fwp3mjhjta4yTc9gwr+/GuMkMZtDHnGdmw6FC2g+CcKJAkuiJQZQMMQ2JcvoxrwcHDRF54FH7k9Hj74pB4BpmDaerhpEVHZscKdj5XAr6+Ig3PR/O4GQm0F93D/TijZyxRk0qDPI1MCmL+pieoOnAjreKNzRXeQReWBIxPWO5lCUkkjz1yrDGCBkI8bCFrD12aYirfpbILCBS1l76fers8yYXfhlMvzxQD1SyA/tbGmhjqaiUAth8Lr3gibNqqIIFKTOLcu4GgBRbrjWlTHF4zKmYPmsdGmuG8oA+dF+dB6b4klbY4ZCMXoktY2ZdjjAB0g7VnsG6KGPhr/Bpb6o7hujrM3bVo/N14luxrmwRvFy9bSdPTqVpxuzwgGfjvXUsjYX6oEp9MLFkVM7yKVeYJmEexbT8da/2PeUMmiwKTQ/rKYR/cxH03vWtESSk8xc=
+  on:
+    distributions: sdist bdist_wheel
+    repo: Horta/limix-tool
