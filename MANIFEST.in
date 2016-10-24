@@ -1,2 +1,5 @@
-include README.md
+exclude .gitignore .travis.yml
 include LICENSE
+include README.md
+include setup.cfg
+recursive-include limix_tool *.py

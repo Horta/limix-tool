@@ -14,23 +14,31 @@ def setup_package():
     pytest_runner = ['pytest-runner'] if needs_pytest else []
 
     setup_requires = [] + pytest_runner
-    install_requires = ['pytest', 'hcache', 'limix_math>=1.0.0', 'limix_util',
-                        'colour', 'limix_plot>=1.0.5']
+    install_requires = ['pytest', 'hcache>=1.0', 'limix_math>=1.0',
+                        'limix_util>=1.0', 'colour', 'limix_plot>=1.0']
     tests_require = install_requires
 
     metadata = dict(
         name='limix_tool',
-        version='1.0.2',
+        version='1.0.0',
         maintainer="Limix Developers",
         maintainer_email="horta@ebi.ac.uk",
         license="MIT",
-        url='http://pmbio.github.io/limix/',
+        url='http://github.com/Horta/limix-tool',
         packages=find_packages(),
-        zip_safe=False,
+        zip_safe=True,
         install_requires=install_requires,
         setup_requires=setup_requires,
         tests_require=tests_require,
         include_package_data=True,
+        classifiers=[
+            "Development Status :: 5 - Production/Stable",
+            "License :: OSI Approved :: MIT License",
+            "Programming Language :: Python :: 2.7",
+            "Programming Language :: Python :: 3.4",
+            "Programming Language :: Python :: 3.5",
+            "Operating System :: OS Independent",
+        ],
     )
 
     try:

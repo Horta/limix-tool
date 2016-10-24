@@ -1,9 +1,11 @@
-from pkg_resources import get_distribution
-from pkg_resources import DistributionNotFound
+from __future__ import absolute_import as _absolute_import
+
+from pkg_resources import get_distribution as _get_distribution
+from pkg_resources import DistributionNotFound as _DistributionNotFound
 
 try:
-    __version__ = get_distribution('limix-tool').version
-except DistributionNotFound:
+    __version__ = _get_distribution('limix_tool').version
+except _DistributionNotFound:
     __version__ = 'unknown'
 
 def test():
