@@ -35,7 +35,7 @@ script:
 - python setup.py sdist
 - pip install dist/`ls dist | grep -i -E '\.(gz)$' | head -1`
 - pushd /
-- python -c "import limix_plot; limix_plot.test()"
+- python -c "import limix_tool; limix_tool.test()"
 - popd
 deploy:
   provider: pypi
