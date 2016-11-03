@@ -60,15 +60,16 @@ class QQPlot(object):
         return max([len(v) for v in iter(self._pv.values())])
 
     def plot(self, confidence=True, plot_top=100, legend=True):
+        print("PLOT 1")
         axes = self._axes
         labels = self._pv.keys()
-
+        print("PLOT 2")
         for label in labels:
             self._plot_points(label, plot_top)
-
+        print("PLOT 3")
         if confidence:
             self._plot_confidence_band()
-
+        print("PLOT 4")
         axes.grid(False)
         axes.tick_params(axis='both', which='major', direction='out')
         axes.spines['right'].set_visible(False)
@@ -83,6 +84,7 @@ class QQPlot(object):
         if legend:
             self._plot_legend(labels)
 
+        print("PLOT 5")
         return axes
 
     def _xymax(self):
@@ -116,9 +118,9 @@ class QQPlot(object):
 
     def _plot_points(self, label, plot_top):
         axes = self._axes
-
+        print("POINTS 1")
         (lnpv, lpv) = self._xy(label)
-
+        print("POINTS 2")
         n = int(len(lnpv) * plot_top/100)
 
         rest = dict()
@@ -127,7 +129,7 @@ class QQPlot(object):
 
         if self._properties[label]:
             rest.update(self._properties[label])
-
+        print("POINTS 3")
         try:
             ec = colour.Color(self._color[label])
         except ValueError:
@@ -137,22 +139,30 @@ class QQPlot(object):
         ec = (ec & 0xfefefe) >> 1
         ec = colour.Color('#' + hex(ec)[2:]).get_web()
 
+        print("POINTS 4")
         axes.plot(lnpv[-n:], lpv[-n:], 'o', markeredgecolor=ec,
                   clip_on=False, zorder=100, **rest)
 
+        print("POINTS 5")
         axes.set_ylabel(r'Observed -log10(P-value)')
         axes.set_xlabel(r'Expected -log10(P-value)')
 
     def _plot_confidence_band(self):
         axes = self._axes
 
+        print("CONFIDENCE 1")
         (bo, me, to) = _rank_confidence_band(self._max_size)
+        print("CONFIDENCE 2")
         bo = np.flipud(-np.log10(bo))
         me = np.flipud(-np.log10(me))
         to = np.flipud(-np.log10(to))
 
+        print("CONFIDENCE 3")
         x = y = me[0], me[-1]
         axes.plot(x, y, 'black')
+        print("CONFIDENCE 4")
         axes.fill_between(me, bo, to, lw=0.0,
                           edgecolor='black', facecolor='0.90',
                           clip_on=False)
+
+        print("CONFIDENCE 5")
