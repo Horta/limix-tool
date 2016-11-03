@@ -1,29 +1,21 @@
 from __future__ import division, absolute_import
+
 import numpy as np
 import colour
 from scipy.special import betaincinv
-from numba import jit, void, int64, float64
 from limix_plot import cycler_ as cycler
 from collections import OrderedDict
-from ncephes.cprob import incbi
-
-@jit(void(float64, int64, float64[:], float64[:], float64[:]),
-     nogil=True, nopython=True)
-def _do_rank_confidence_band(alpha, n, bottom, mean, top):
-    for k in range(1, n+1):
-        top[k-1] = incbi(k, n + 1. - k, 1-alpha)
-        mean[k-1] = k/(n+1.)
-        bottom[k-1] = incbi(k, n + 1. - k, alpha)
 
 def _rank_confidence_band(nranks):
     alpha = 0.01
     n = nranks
 
-    mean = np.empty(n)
-    top = np.empty(n)
-    bottom = np.empty(n)
+    k0 = np.arange(1, n+1)
+    k1 = np.flipud(k0).copy()
 
-    _do_rank_confidence_band(alpha, n, bottom, mean, top)
+    top = betaincinv(k0, k1, 1-alpha)
+    mean = k0 / (n + 1)
+    bottom = betaincinv(k0, k1, alpha)
 
     return (bottom, mean, top)
 
@@ -60,16 +52,12 @@ class QQPlot(object):
         return max([len(v) for v in iter(self._pv.values())])
 
     def plot(self, confidence=True, plot_top=100, legend=True):
-        print("PLOT 1")
         axes = self._axes
         labels = self._pv.keys()
-        print("PLOT 2")
         for label in labels:
             self._plot_points(label, plot_top)
-        print("PLOT 3")
         if confidence:
             self._plot_confidence_band()
-        print("PLOT 4")
         axes.grid(False)
         axes.tick_params(axis='both', which='major', direction='out')
         axes.spines['right'].set_visible(False)
@@ -84,7 +72,6 @@ class QQPlot(object):
         if legend:
             self._plot_legend(labels)
 
-        print("PLOT 5")
         return axes
 
     def _xymax(self):
@@ -118,18 +105,15 @@ class QQPlot(object):
 
     def _plot_points(self, label, plot_top):
         axes = self._axes
-        print("POINTS 1")
         (lnpv, lpv) = self._xy(label)
-        print("POINTS 2")
         n = int(len(lnpv) * plot_top/100)
 
         rest = dict()
         if self._color[label]:
             rest['color'] = self._color[label]
 
-        if self._properties[label]:
+        if self._properties[label]:save
             rest.update(self._properties[label])
-        print("POINTS 3")
         try:
             ec = colour.Color(self._color[label])
         except ValueError:
@@ -139,30 +123,22 @@ class QQPlot(object):
         ec = (ec & 0xfefefe) >> 1
         ec = colour.Color('#' + hex(ec)[2:]).get_web()
 
-        print("POINTS 4")
         axes.plot(lnpv[-n:], lpv[-n:], 'o', markeredgecolor=ec,
                   clip_on=False, zorder=100, **rest)
 
-        print("POINTS 5")
         axes.set_ylabel(r'Observed -log10(P-value)')
         axes.set_xlabel(r'Expected -log10(P-value)')
 
     def _plot_confidence_band(self):
         axes = self._axes
 
-        print("CONFIDENCE 1")
         (bo, me, to) = _rank_confidence_band(self._max_size)
-        print("CONFIDENCE 2")
         bo = np.flipud(-np.log10(bo))
         me = np.flipud(-np.log10(me))
         to = np.flipud(-np.log10(to))
 
-        print("CONFIDENCE 3")
         x = y = me[0], me[-1]
         axes.plot(x, y, 'black')
-        print("CONFIDENCE 4")
         axes.fill_between(me, bo, to, lw=0.0,
                           edgecolor='black', facecolor='0.90',
                           clip_on=False)
-
-        print("CONFIDENCE 5")
