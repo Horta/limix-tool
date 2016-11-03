@@ -3,7 +3,7 @@ from __future__ import division
 from numba import jit
 from numba import float64, int64
 from numba import guvectorize
-import scipy.stats as st
+from scipy.stats import chi2
 import numpy as np
 from math import log, exp
 from numpy import partition
@@ -18,16 +18,16 @@ def _get_median_terms(n):
         kth = [(n - 1) // 2]
     return kth
 
-def gcontrol(chi2):
+_chi2_df1 = chi2(df=1)
+
+def gcontrol(chi2_values):
     """ Genomic control
     """
-    n = len(chi2)
+    n = len(chi2_values)
     kth = _get_median_terms(n)
-    c = st.chi2(df=1)
-    chi2 = partition(chi2, kth)
-    # x2obs = mean(c.ppf(1-chi2[kth]))
-    x2obs = mean(chi2[kth])
-    x2exp = c.ppf(0.5)
+    chi2_values = partition(chi2_values, kth)
+    x2obs = mean(chi2_values[kth])
+    x2exp = _chi2_df1.ppf(0.5)
     return x2obs/x2exp
 
 def qvalues(pv):
