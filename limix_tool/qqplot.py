@@ -4,7 +4,7 @@ import colour
 from scipy.special import betaincinv
 from numba import jit, void, int64, float64
 from limix_plot import cycler_ as cycler
-from limix_util.dict import OrderedDict
+from collections import OrderedDict
 from ncephes.cprob import incbi
 
 @jit(void(float64, int64, float64[:], float64[:], float64[:]),
@@ -57,7 +57,7 @@ class QQPlot(object):
 
     @property
     def _max_size(self):
-        return max([len(v) for v in self._pv.itervalues()])
+        return max([len(v) for v in iter(self._pv.values())])
 
     def plot(self, confidence=True, plot_top=100, legend=True):
         axes = self._axes
