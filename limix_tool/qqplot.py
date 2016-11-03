@@ -112,7 +112,7 @@ class QQPlot(object):
         if self._color[label]:
             rest['color'] = self._color[label]
 
-        if self._properties[label]:save
+        if self._properties[label]:
             rest.update(self._properties[label])
         try:
             ec = colour.Color(self._color[label])
