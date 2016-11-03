@@ -1,4 +1,5 @@
 from __future__ import division
+
 import logging
 import numpy as np
 from numpy import asarray

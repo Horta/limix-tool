@@ -9,7 +9,7 @@ class TestStats(unittest.TestCase):
         n_a = 21
         n_b = 2*N - n_a
         pv = []
-        n_abs = range(1, n_a+2, 2)
+        n_abs = list(range(1, n_a+2, 2))
         for n_ab in n_abs:
             n_b = (N - (n_a-n_ab)/2 - n_ab) * 2 + n_ab
             pv.append(hwe_stat(n_ab, n_a, n_b))
@@ -26,7 +26,7 @@ class TestStats(unittest.TestCase):
         n_a = 20
         n_b = 2*N - n_a
         pv = []
-        n_abs = range(0, n_a+2, 2)
+        n_abs = list(range(0, n_a+2, 2))
         for n_ab in n_abs:
             n_b = (N - (n_a-n_ab)/2 - n_ab) * 2 + n_ab
             pv.append(hwe_stat(n_ab, n_a, n_b))

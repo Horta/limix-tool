@@ -1,4 +1,5 @@
 from __future__ import division
+
 from numba import jit
 from numba import float64, int64
 from numba import guvectorize

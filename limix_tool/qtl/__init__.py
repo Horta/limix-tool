@@ -1,4 +1,5 @@
-from __future__ import absolute_import
+from __future__ import absolute_import as _absolute_import
+
 from .score import NullScore
 from .score import WindowScore
 from .score import combine_pvalues

@@ -1,3 +1,5 @@
+from __future__ import division
+
 from numpy import asarray
 import numpy as np
 from limix_plot.consensus_curve import ConsensusCurve

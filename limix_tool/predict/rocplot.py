@@ -50,7 +50,7 @@ class ROCPlot(object):
     def plot(self, legend=True):
         axes = self._axes
 
-        for label in self._probabilities.keys():
+        for label in list(self._probabilities.keys()):
             self._plot_for_label(label)
 
         axes.set_xlabel('False-positive rate')
@@ -63,7 +63,7 @@ class ROCPlot(object):
         axes.set_ylim([0, 1 + eps])
 
         if legend:
-            self._plot_legend(self._probabilities.keys())
+            self._plot_legend(list(self._probabilities.keys()))
 
         return axes
 

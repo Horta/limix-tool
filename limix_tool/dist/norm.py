@@ -1,3 +1,5 @@
+from __future__ import division
+
 import scipy
 from numba import vectorize, float64
 
