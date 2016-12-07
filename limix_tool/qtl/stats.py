@@ -8,7 +8,7 @@ import numpy as np
 from math import log, exp
 from numpy import partition
 from numpy import mean
-from limix_math.special import logsumexp
+from numpy_sugar.special import logsumexp
 
 def _get_median_terms(n):
     if n % 2 == 0:

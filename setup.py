@@ -14,13 +14,13 @@ def setup_package():
     pytest_runner = ['pytest-runner'] if needs_pytest else []
 
     setup_requires = [] + pytest_runner
-    install_requires = ['pytest', 'limix_math>=1.1.10',
+    install_requires = ['pytest', 'numpy_sugar',
                         'limix_util>=1.0', 'colour', 'limix_plot>=1.0.1']
     tests_require = install_requires
 
     metadata = dict(
         name='limix_tool',
-        version='1.0.4',
+        version='1.0.5',
         maintainer="Limix Developers",
         maintainer_email="horta@ebi.ac.uk",
         license="MIT",

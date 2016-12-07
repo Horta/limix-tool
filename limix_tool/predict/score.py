@@ -5,8 +5,8 @@ import numpy as np
 from numpy import asarray
 from numba import jit
 from numpy import log10
-from limix_math import iscrescent
-from limix_math.special import r_squared
+from numpy_sugar import is_crescent
+from numpy_sugar.special import r_squared
 
 
 def roc_curve(multi_score, method, max_fpr=0.05):
@@ -37,7 +37,7 @@ class _WindowScore(object):
         self._pv = dict()
         self._sidx = dict()
         pos = asarray(pos)
-        assert iscrescent(pos)
+        assert is_crescent(pos)
         self._ncandidates = len(pos)
 
         total_size = pos[-1] - pos[0]

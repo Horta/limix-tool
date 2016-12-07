@@ -7,8 +7,8 @@ from numpy import asarray
 from numba import jit
 from numpy import log10
 from .stats import gcontrol
-from limix_math import iscrescent
-from limix_math.special import r_squared
+from numpy_sugar import is_crescent
+from numpy_sugar.special import r_squared
 
 
 @jit
@@ -169,7 +169,7 @@ class _WindowScore(object):
         self._pv = dict()
         self._sidx = dict()
         pos = asarray(pos)
-        assert iscrescent(pos)
+        assert is_crescent(pos)
         self._ncandidates = len(pos)
 
         total_size = pos[-1] - pos[0]
@@ -242,7 +242,7 @@ class WindowScore(object):
                         marker, in crescent order.
         """
         pos = np.asarray(pos, int)
-        assert iscrescent(pos)
+        assert is_crescent(pos)
         if X is not None:
             assert len(pos) == X.shape[1]
         if X is None and r2 is None:

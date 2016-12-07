@@ -1,11 +1,11 @@
 import numpy as np
 import scipy as sp
 import scipy.stats as st
-from limix_math.dist.norm import logpdf
-from limix_math.dist.norm import pdf
-from limix_math.dist.norm import logcdf
-from limix_math.dist.norm import cdf
-from limix_math.dist.norm import logsf
+from numpy_sugar.special import normal_logcdf as logcdf
+from numpy_sugar.special import normal_logpdf as logpdf
+from numpy_sugar.special import normal_pdf as pdf
+from numpy_sugar.special import normal_cdf as cdf
+from numpy_sugar.special import normal_logsf as logsf
 
 def compute_offset(varg, vare, prevalence):
     # vg = np.sqrt(varg)
